@@ -1054,17 +1054,28 @@ def generate_vehicle_dcs(create_zip=True, include_audit=True, generate_pdfs=True
             )
             
             # Get DC data for this vehicle
-            vehicle_dc_data = st.session_state.data_manager.get_vehicle_dc_data(
-                assignment['trip_refs'], 
-                assignment['vehicle_number']
-            )
-            
-            if vehicle_dc_data:
-                # Add to batch processing list
-                all_vehicle_dc_data.extend(vehicle_dc_data)
-                print(f"✅ Collected data for vehicle {assignment['vehicle_number']}: {len(vehicle_dc_data)} DCs")
-            else:
-                st.error(f"❌ Failed to process vehicle {assignment['vehicle_number']}")
+            try:
+                vehicle_dc_data = st.session_state.data_manager.get_vehicle_dc_data(
+                    assignment['trip_refs'], 
+                    assignment['vehicle_number']
+                )
+                
+                if vehicle_dc_data:
+                    # Add to batch processing list
+                    all_vehicle_dc_data.extend(vehicle_dc_data)
+                    print(f"✅ Collected data for vehicle {assignment['vehicle_number']}: {len(vehicle_dc_data)} DCs")
+                else:
+                    error_msg = f"❌ Failed to process vehicle {assignment['vehicle_number']}: get_vehicle_dc_data returned None/empty"
+                    print(error_msg)
+                    st.error(error_msg)
+                    st.warning(f"Check: Are trips selected properly? Trip refs: {assignment.get('trip_refs', [])[:3]}...")
+            except Exception as e:
+                error_msg = f"❌ Exception processing vehicle {assignment['vehicle_number']}: {str(e)}"
+                print(error_msg)
+                import traceback
+                print(traceback.format_exc())
+                st.error(error_msg)
+                st.code(traceback.format_exc())
         
         if all_vehicle_dc_data:
             progress_bar.progress(0.5, text="Processing all vehicles with consolidation...")
