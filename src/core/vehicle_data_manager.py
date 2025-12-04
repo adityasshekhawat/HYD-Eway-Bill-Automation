@@ -399,6 +399,13 @@ class VehicleDataManager:
                 # Count sellers
                 sellers = trip_rows['sender'].nunique()
                 
+                # Get unique parcel types and categories
+                parcel_types = trip_rows['parcel_type'].dropna().unique()
+                parcel_type_str = ', '.join(sorted(parcel_types)) if len(parcel_types) > 0 else ''
+                
+                categories = trip_rows['category'].dropna().unique()
+                category_str = ', '.join(sorted(categories)) if len(categories) > 0 else ''
+                
                 # Create composite trip identifier for UI - use same format as multiple facilities
                 composite_trip_id = f"{trip_ref_number}@{hub}@{facility_name}"
                 
@@ -411,6 +418,8 @@ class VehicleDataManager:
                     'total_value': float(total_value),
                     'product_count': product_count,
                     'seller_count': sellers,
+                    'parcel_type': parcel_type_str,  # Added: unique parcel types
+                    'category': category_str,  # Added: unique categories
                     'from': facility_name,  # Include the specific facility for this trip
                     'to': to_location
                 })
@@ -469,6 +478,13 @@ class VehicleDataManager:
                 # Count sellers
                 sellers = trip_rows['sender'].nunique()
                 
+                # Get unique parcel types and categories
+                parcel_types = trip_rows['parcel_type'].dropna().unique()
+                parcel_type_str = ', '.join(sorted(parcel_types)) if len(parcel_types) > 0 else ''
+                
+                categories = trip_rows['category'].dropna().unique()
+                category_str = ', '.join(sorted(categories)) if len(categories) > 0 else ''
+                
                 # Create composite trip identifier for UI
                 composite_trip_id = f"{trip_ref_number}@{hub}@{from_location}"
                 
@@ -481,6 +497,8 @@ class VehicleDataManager:
                     'total_value': float(total_value),
                     'product_count': product_count,
                     'seller_count': sellers,
+                    'parcel_type': parcel_type_str,  # Added: unique parcel types
+                    'category': category_str,  # Added: unique categories
                     'from': from_location,  # Include the specific facility for this trip
                     'to': to_location
                 })
