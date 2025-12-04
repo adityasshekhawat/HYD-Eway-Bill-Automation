@@ -547,8 +547,20 @@ def group_trips_page():
         else:
             st.write(f"📋 **{len(available_trips_df)} unassigned trips available for selection:**")
             
-            # Filter controls in columns
-            filter_col1, filter_col2, filter_col3 = st.columns(3)
+            # Check if new filter columns exist (backward compatibility)
+            has_parcel_type = 'parcel_type' in available_trips_df.columns
+            has_category = 'category' in available_trips_df.columns
+            
+            # Show warning if old data format detected
+            if not has_parcel_type or not has_category:
+                st.warning("⚠️ Old data format detected. Please **clear session** and **reload data** in Step 1 to enable Parcel Type and Category filters.")
+            
+            # Filter controls in columns (adjust based on available filters)
+            if has_parcel_type and has_category:
+                filter_col1, filter_col2, filter_col3 = st.columns(3)
+            else:
+                filter_col1, filter_col2 = st.columns(2)
+                filter_col3 = None
             
             with filter_col1:
                 # Always show facility filter for consistency (unified behavior)
@@ -560,78 +572,111 @@ def group_trips_page():
                     key="facility_filter_group"
                 )
             
-            with filter_col2:
-                # Parcel Type filter
-                # Extract unique parcel types from all trips (handling comma-separated values)
-                all_parcel_types = set()
-                for pt in available_trips_df['parcel_type'].dropna():
-                    if pt:
-                        all_parcel_types.update([p.strip() for p in str(pt).split(',')])
-                all_parcel_types = sorted(list(all_parcel_types))
-                
-                parcel_type_filter = st.multiselect(
-                    "Filter by Parcel Type:",
-                    all_parcel_types,
-                    default=all_parcel_types,
-                    key="parcel_type_filter"
-                )
+            # Only show parcel type filter if column exists
+            if has_parcel_type and filter_col2:
+                with filter_col2:
+                    # Parcel Type filter
+                    # Extract unique parcel types from all trips (handling comma-separated values)
+                    all_parcel_types = set()
+                    for pt in available_trips_df['parcel_type'].dropna():
+                        if pt:
+                            all_parcel_types.update([p.strip() for p in str(pt).split(',')])
+                    all_parcel_types = sorted(list(all_parcel_types))
+                    
+                    parcel_type_filter = st.multiselect(
+                        "Filter by Parcel Type:",
+                        all_parcel_types,
+                        default=all_parcel_types,
+                        key="parcel_type_filter"
+                    )
+            else:
+                parcel_type_filter = []
             
-            with filter_col3:
-                # Category filter
-                # Extract unique categories from all trips (handling comma-separated values)
-                all_categories = set()
-                for cat in available_trips_df['category'].dropna():
-                    if cat:
-                        all_categories.update([c.strip() for c in str(cat).split(',')])
-                all_categories = sorted(list(all_categories))
-                
-                category_filter = st.multiselect(
-                    "Filter by Category:",
-                    all_categories,
-                    default=all_categories,
-                    key="category_filter"
-                )
+            # Only show category filter if column exists
+            if has_category and filter_col3:
+                with filter_col3:
+                    # Category filter
+                    # Extract unique categories from all trips (handling comma-separated values)
+                    all_categories = set()
+                    for cat in available_trips_df['category'].dropna():
+                        if cat:
+                            all_categories.update([c.strip() for c in str(cat).split(',')])
+                    all_categories = sorted(list(all_categories))
+                    
+                    category_filter = st.multiselect(
+                        "Filter by Category:",
+                        all_categories,
+                        default=all_categories,
+                        key="category_filter"
+                    )
+            else:
+                category_filter = []
             
             # Apply filters with AND logic
             if facility_filter and len(facility_filter) < len(all_facilities):
                 available_trips_df = available_trips_df[available_trips_df['from'].isin(facility_filter)]
             
-            # Filter by parcel type (check if any selected type is in the trip's parcel_type string)
-            if parcel_type_filter and len(parcel_type_filter) < len(all_parcel_types):
-                def has_parcel_type(pt_str):
-                    if pd.isna(pt_str) or not pt_str:
-                        return False
-                    trip_types = [p.strip() for p in str(pt_str).split(',')]
-                    return any(pt in parcel_type_filter for pt in trip_types)
+            # Filter by parcel type (only if column exists and filter has values)
+            if has_parcel_type and parcel_type_filter:
+                # Get all unique parcel types to check if filter is subset
+                all_parcel_types_for_check = set()
+                for pt in available_trips_df['parcel_type'].dropna():
+                    if pt:
+                        all_parcel_types_for_check.update([p.strip() for p in str(pt).split(',')])
                 
-                available_trips_df = available_trips_df[available_trips_df['parcel_type'].apply(has_parcel_type)]
+                if len(parcel_type_filter) < len(all_parcel_types_for_check):
+                    def has_parcel_type(pt_str):
+                        if pd.isna(pt_str) or not pt_str:
+                            return False
+                        trip_types = [p.strip() for p in str(pt_str).split(',')]
+                        return any(pt in parcel_type_filter for pt in trip_types)
+                    
+                    available_trips_df = available_trips_df[available_trips_df['parcel_type'].apply(has_parcel_type)]
             
-            # Filter by category (check if any selected category is in the trip's category string)
-            if category_filter and len(category_filter) < len(all_categories):
-                def has_category(cat_str):
-                    if pd.isna(cat_str) or not cat_str:
-                        return False
-                    trip_categories = [c.strip() for c in str(cat_str).split(',')]
-                    return any(cat in category_filter for cat in trip_categories)
+            # Filter by category (only if column exists and filter has values)
+            if has_category and category_filter:
+                # Get all unique categories to check if filter is subset
+                all_categories_for_check = set()
+                for cat in available_trips_df['category'].dropna():
+                    if cat:
+                        all_categories_for_check.update([c.strip() for c in str(cat).split(',')])
                 
-                available_trips_df = available_trips_df[available_trips_df['category'].apply(has_category)]
+                if len(category_filter) < len(all_categories_for_check):
+                    def has_category(cat_str):
+                        if pd.isna(cat_str) or not cat_str:
+                            return False
+                        trip_categories = [c.strip() for c in str(cat_str).split(',')]
+                        return any(cat in category_filter for cat in trip_categories)
+                    
+                    available_trips_df = available_trips_df[available_trips_df['category'].apply(has_category)]
             
             # Show filter summary
-            filter_applied = (
-                (facility_filter and len(facility_filter) < len(all_facilities)) or
-                (parcel_type_filter and len(parcel_type_filter) < len(all_parcel_types)) or
-                (category_filter and len(category_filter) < len(all_categories))
-            )
+            filter_applied = False
+            filter_parts = []
+            
+            if facility_filter and len(facility_filter) < len(all_facilities):
+                filter_applied = True
+                filter_parts.append(f"Facilities: {', '.join(facility_filter)}")
+            
+            if has_parcel_type and parcel_type_filter:
+                all_pt = set()
+                for pt in trips_df['parcel_type'].dropna():
+                    if pt:
+                        all_pt.update([p.strip() for p in str(pt).split(',')])
+                if len(parcel_type_filter) < len(all_pt):
+                    filter_applied = True
+                    filter_parts.append(f"Parcel Types: {', '.join(parcel_type_filter)}")
+            
+            if has_category and category_filter:
+                all_cat = set()
+                for cat in trips_df['category'].dropna():
+                    if cat:
+                        all_cat.update([c.strip() for c in str(cat).split(',')])
+                if len(category_filter) < len(all_cat):
+                    filter_applied = True
+                    filter_parts.append(f"Categories: {', '.join(category_filter)}")
             
             if filter_applied:
-                filter_parts = []
-                if facility_filter and len(facility_filter) < len(all_facilities):
-                    filter_parts.append(f"Facilities: {', '.join(facility_filter)}")
-                if parcel_type_filter and len(parcel_type_filter) < len(all_parcel_types):
-                    filter_parts.append(f"Parcel Types: {', '.join(parcel_type_filter)}")
-                if category_filter and len(category_filter) < len(all_categories):
-                    filter_parts.append(f"Categories: {', '.join(category_filter)}")
-                
                 st.info(f"🔍 Filtered to {len(available_trips_df)} trips | {' | '.join(filter_parts)}")
             
             # Add selection column
@@ -640,8 +685,17 @@ def group_trips_page():
             # Use a stable key that reflects the current state
             editor_key = f"trip_selector_{len(available_trips_df)}_{current_assigned_count}"
             
-            # Always show consistent columns - unified format (including new filters)
-            display_columns = ['Select', 'from', 'trip_ref_number', 'hub', 'parcel_type', 'category', 'delivery_date', 'total_qty', 'total_value', 'product_count']
+            # Always show consistent columns - unified format (including new filters if available)
+            display_columns = ['Select', 'from', 'trip_ref_number', 'hub']
+            
+            # Add optional columns if they exist
+            if 'parcel_type' in available_trips_df.columns:
+                display_columns.append('parcel_type')
+            if 'category' in available_trips_df.columns:
+                display_columns.append('category')
+            
+            # Add remaining standard columns
+            display_columns.extend(['delivery_date', 'total_qty', 'total_value', 'product_count'])
             
             # Ensure trip_id_column is always available in display
             if trip_id_column not in display_columns and trip_id_column in available_trips_df.columns:
