@@ -286,7 +286,8 @@ class VehicleDCGenerator:
             print(f"🏭 Using facility for DC generation: {facility_name}")
             
             # NEW: Extract hub information for Telangana hub-specific sequences
-            hub_value = dc_data_item.get('hub', '')  # e.g., 'HYD_NCH', 'HYD_BAL'
+            # FIXED: Use 'hub_name' (set in vehicle_data_manager.py line 845)
+            hub_value = dc_data_item.get('hub_name', '') or dc_data_item.get('hub', '')  # e.g., 'HYD_NCH', 'HYD_BAL'
             print(f"📍 Hub value for DC sequencing: {hub_value or 'N/A'}")
             
             # FIXED: Reserve DC number first (doesn't increment sequence yet)
