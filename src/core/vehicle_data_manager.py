@@ -606,6 +606,13 @@ class VehicleDataManager:
             
             if vehicle_data.empty:
                 print("❌ No data found for selected trips")
+                print(f"🔍 DEBUG - Why no data found:")
+                print(f"   Trip refs searched: {actual_trip_refs[:5]}")
+                print(f"   Name filters: {name_filters[:3]}")
+                print(f"   Available trip refs in data (sample): {self.raw_data['trip_ref_number'].unique()[:10].tolist()}")
+                print(f"   Available hubs in data (sample): {self.raw_data['hub'].unique()[:10].tolist()}")
+                print(f"   Available names in data (sample): {self.raw_data['name'].unique()[:10].tolist()}")
+                print(f"   Trip ref data type: {self.raw_data['trip_ref_number'].dtype}")
                 return None
             
             print(f"🔄 Processing {len(vehicle_data)} rows for vehicle {vehicle_number}")
