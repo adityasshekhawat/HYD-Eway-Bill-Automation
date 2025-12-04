@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Google Sheets Credentials
+google_sheets_credentials.json
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+output/
+generated_vehicle_dcs/
+*.log
+dc_sequence_state*.json
+sequence_backups/
