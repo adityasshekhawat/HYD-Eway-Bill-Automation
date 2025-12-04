@@ -289,10 +289,12 @@ class EwayBillTemplateGenerator:
         customer_state_code = self._get_state_code(customer_state)
         
         # Get document number (Serial Number of Challan)
-        document_number = dc_data.get('dc_number', '') or ''
+        document_number = dc_data.get('dc_number') or ''
+        # Ensure it's a string (defensive check for None, int, etc.)
+        document_number = str(document_number) if document_number else ''
         
         # Clean document number - remove date part if present
-        if document_number and '_' in document_number:
+        if document_number and isinstance(document_number, str) and '_' in document_number:
             # Split by underscore and take only the first part (the serial number)
             parts = document_number.split('_')
             # Keep the serial number part only (parts before the last underscore)
@@ -694,11 +696,11 @@ class EwayBillTemplateGenerator:
                 state = (metadata.get('state') or hub_state_hint).strip()
                 pincode = hub_pincode_hint or self._normalize_pincode(metadata.get('pincode'))
                 state_code = metadata.get('state_code') or self._get_state_code(state)
-                
-                return {
+            
+            return {
                     'address1': address1,
                     'address2': address2,
-                    'city': city,
+                'city': city,
                     'state': state,
                     'pincode': pincode,
                     'state_code': state_code
