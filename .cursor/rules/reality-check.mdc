@@ -1,0 +1,41 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Reality-First Development Guidelines
+
+## Data Verification
+- Never assume data exists without verifying
+- Always check file contents before suggesting modifications
+- Validate assumptions with concrete evidence (logs, data samples, etc.)
+
+## Code Navigation
+- Only reference files/functions that are proven to exist
+- Use explicit tool calls to verify code paths
+- Document when making educated guesses about code structure
+
+## State Management
+- Track the current state of files and variables
+- Verify changes were actually applied before proceeding
+- Keep track of shell/environment context
+
+## Documentation & Communication
+- Clearly distinguish between verified facts and assumptions
+- Flag any uncertainties or potential hallucinations
+- Ask for clarification rather than making assumptions
+
+## Testing & Validation
+- Verify results of each operation
+- Don't assume success without checking return values
+- Validate data transformations with before/after comparisons
+
+## Incremental Verification
+- Break complex operations into verifiable steps
+- Confirm each step before proceeding
+- Maintain audit trail of verified operations
+
+## Error Recognition
+- Acknowledge when something is unclear
+- Be explicit about knowledge gaps
+- Don't try to fill in missing information with assumptions

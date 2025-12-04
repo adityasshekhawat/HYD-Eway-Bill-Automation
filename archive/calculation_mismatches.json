@@ -1,0 +1,217 @@
+{
+  "summary": {
+    "total_rows": 2209,
+    "matching_rows": 2200,
+    "mismatches": 9,
+    "accuracy": 99.59
+  },
+  "mismatches": [
+    {
+      "jpin": "JPIN-1304552622",
+      "matches": {
+        "cgst": false,
+        "sgst": false,
+        "cess": true
+      },
+      "existing": {
+        "cgst": "204.768",
+        "sgst": "204.768",
+        "cess": "0.0"
+      },
+      "calculated": {
+        "cgst": "204.78",
+        "sgst": "204.78",
+        "cess": "0.00"
+      },
+      "inputs": {
+        "taxable_value": "8191.0",
+        "gst_rate": "5.0",
+        "cess_rate": "0.0"
+      }
+    },
+    {
+      "jpin": "JPIN-1304473645",
+      "matches": {
+        "cgst": false,
+        "sgst": false,
+        "cess": true
+      },
+      "existing": {
+        "cgst": "116.26425",
+        "sgst": "116.26425",
+        "cess": "0.0"
+      },
+      "calculated": {
+        "cgst": "116.28",
+        "sgst": "116.28",
+        "cess": "0.00"
+      },
+      "inputs": {
+        "taxable_value": "4651.0",
+        "gst_rate": "5.0",
+        "cess_rate": "0.0"
+      }
+    },
+    {
+      "jpin": "JPIN-1304194400",
+      "matches": {
+        "cgst": false,
+        "sgst": false,
+        "cess": false
+      },
+      "existing": {
+        "cgst": "2357.2404",
+        "sgst": "2357.2404",
+        "cess": "2357.2404"
+      },
+      "calculated": {
+        "cgst": "2357.28",
+        "sgst": "2357.28",
+        "cess": "617408.41"
+      },
+      "inputs": {
+        "taxable_value": "26192.0",
+        "gst_rate": "18.0",
+        "cess_rate": "2357.2404"
+      }
+    },
+    {
+      "jpin": "JPIN-1304473644",
+      "matches": {
+        "cgst": false,
+        "sgst": false,
+        "cess": true
+      },
+      "existing": {
+        "cgst": "136.1115",
+        "sgst": "136.1115",
+        "cess": "0.0"
+      },
+      "calculated": {
+        "cgst": "136.10",
+        "sgst": "136.10",
+        "cess": "0.00"
+      },
+      "inputs": {
+        "taxable_value": "5444.0",
+        "gst_rate": "5.0",
+        "cess_rate": "0.0"
+      }
+    },
+    {
+      "jpin": "JPIN-1304502291",
+      "matches": {
+        "cgst": false,
+        "sgst": false,
+        "cess": true
+      },
+      "existing": {
+        "cgst": "38.514",
+        "sgst": "38.514",
+        "cess": "0.0"
+      },
+      "calculated": {
+        "cgst": "38.53",
+        "sgst": "38.53",
+        "cess": "0.00"
+      },
+      "inputs": {
+        "taxable_value": "1541.0",
+        "gst_rate": "5.0",
+        "cess_rate": "0.0"
+      }
+    },
+    {
+      "jpin": "JPIN-1304476777",
+      "matches": {
+        "cgst": false,
+        "sgst": false,
+        "cess": true
+      },
+      "existing": {
+        "cgst": "74.4375",
+        "sgst": "74.4375",
+        "cess": "0.0"
+      },
+      "calculated": {
+        "cgst": "74.45",
+        "sgst": "74.45",
+        "cess": "0.00"
+      },
+      "inputs": {
+        "taxable_value": "2978.0",
+        "gst_rate": "5.0",
+        "cess_rate": "0.0"
+      }
+    },
+    {
+      "jpin": "JPIN-1304198163",
+      "matches": {
+        "cgst": false,
+        "sgst": false,
+        "cess": false
+      },
+      "existing": {
+        "cgst": "126.873",
+        "sgst": "126.873",
+        "cess": "126.873"
+      },
+      "calculated": {
+        "cgst": "126.90",
+        "sgst": "126.90",
+        "cess": "1788.91"
+      },
+      "inputs": {
+        "taxable_value": "1410.0",
+        "gst_rate": "18.0",
+        "cess_rate": "126.873"
+      }
+    },
+    {
+      "jpin": "JPIN-1304476190",
+      "matches": {
+        "cgst": false,
+        "sgst": false,
+        "cess": true
+      },
+      "existing": {
+        "cgst": "81.96525",
+        "sgst": "81.96525",
+        "cess": "0.0"
+      },
+      "calculated": {
+        "cgst": "81.98",
+        "sgst": "81.98",
+        "cess": "0.00"
+      },
+      "inputs": {
+        "taxable_value": "3279.0",
+        "gst_rate": "5.0",
+        "cess_rate": "0.0"
+      }
+    },
+    {
+      "jpin": "JPIN-1304523025",
+      "matches": {
+        "cgst": false,
+        "sgst": false,
+        "cess": true
+      },
+      "existing": {
+        "cgst": "126.6975",
+        "sgst": "126.6975",
+        "cess": "0.0"
+      },
+      "calculated": {
+        "cgst": "126.72",
+        "sgst": "126.72",
+        "cess": "0.00"
+      },
+      "inputs": {
+        "taxable_value": "1408.0",
+        "gst_rate": "18.0",
+        "cess_rate": "0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+Field Name,Is this field mandatory ?,Description,Field Specification
+Supply Type,No,The nature of Supply must be mentioned here:-Inward or Outward,Inward or Outward
+Sub Type,No,The nature of Outward Supply or Inward supply must be mentioned here.,"Incase of Outward:-
+  Supply or
+  Export or 
+  Job Work or
+  For Own Use or
+  SKD/CKD or
+  Line Sales or
+  Recipient not known or
+  Exhibition or Fairs or
+  Others.
+  
+  In case of Inward:-
+  Supply or
+  Import or
+  For own use or
+  Sales Return or
+  Job work Returns or
+  SKD/CKD or
+  Recipient not known or
+  Exhibition or Fairs or
+  Others."
+Document Type,No,Choose the Document type whether Tax Invoice or Bill of Supply or Bill of Entry or Challan or Credit Note or Others,Invoice or Bill of Supply or Bill of Entry or Challan or Credit Note or Others
+Invoice Reference No,No,IRN generated from the government portal,
+Document Number,Yes,Document Number of either Tax Invoice or Bill of Supply or Bill of Entry or Challan or Credit Note whichever applicable.,Alphanumeric (Max length:16).No special characters except / -
+Document Date,Yes,Document Date of either Tax Invoice or Bill of Supply or Bill of Entry or Challan or Credit Note whichever applicable.,dd/mm/yyyy format
+Supplier GSTIN,"Yes, if applicable","In case of Outward, enter your own GSTIN.
+ In case of Inward ,GSTIN of Consignor/Sender if registered under GST.",Alphanumeric with 15 characters.(same validation as for GSTiN)
+Supplier Name,"Yes, if Supplier is unregistered.",Enter the Consignor's Name from where the goods are being dispatched.,Alphanumeric with maximum 100 characters.No special characters.
+Supplier Address1,No,Enter the Consignor's address from where the goods are being dispatched.,String (Max length 100).
+Supplier Address2,No,Enter the Consignor's address from where the goods are being dispatched.,String (Max length 180).
+Supplier Place,No,Enter the Consignor's city or district from where the goods are being dispatched.,Alphanumeric with maximum 50 characters.
+Supplier Pincode,Yes,Enter the Consignor's Pincode from where goods are being dispatched,Numeric with Maximum 6 characters
+Supplier State,Yes,"In case of Outward movement of goods,enter your own State
+ In case of Inward , enter the Sender's State",Refer the State Code Sheet
+Customer Billing Name,"Yes, if Customer is unregistered.",Enter the Receivers Name.,Alphanumeric with maximum 100 characters.
+Customer Billing GSTIN,"Yes, if applicable","In case of Outward ,GSTIN of Receiver if registered under GST.
+ In case of Inward enter your GSTIN.",Alphanumeric with 15 characters
+Customer Billing Address 1,No,The Receiver's address must be provided here.,String (Max length 100).
+Customer Billing Address 2,No,The Receiver's address must be provided here.,String (Max length 180).
+Customer Billing City,No,The Receiver's City or District must be provided here.,Alphanumeric with maximum 50 characters.
+Customer Billing State,Yes,"In case of Inward enter your own State.
+ In case of Outward enter the Consignee/Receivers State.",
+Customer Billing Pincode,Yes,"In case of Inward enter your own Pincode.
+ In case of Outward enter the Consignee/Receivers Pincode.",Numeric with 6 characters
+Distance Level (Km),No,Approximate Distance between Consignor & Consignee place,Only Numbers are allowed and Distance cannot be more than 3000 Kms
+Transportation Mode (Road/Rail/Air/Ship),No,Select the mode of Transportation,Road' or 'Rail' or 'Air' or 'Ship'
+Transporter ID,No,"In case of Road ,if goods are transported through a transporter please enter Transporter ID or the Transporter GSTIN, who is going to move the consignment.If own vehicle is used , you may enter your own GSTIN.
+ In case of Rail/Ship/Air , it is not applicable.",Alphanumeric with 15 characters.
+Transporter Name,No,"Enter the Transporters Name through which the goods are transported by Road. If own Vehicle is used then no need to enter the Transporters name.
+ In case of transportation by Rail/Air/Ship it is not applicable.",Alphanumeric with maximum 100 characters.
+Transportation Date,No,"The date of Transport must be entered here.Trans Date should be on or after the Document Date i.e the Tax Invoice,Bill of Supply , Credit note etc.",dd/mm/yyyy format.
+Transporter Doc No,No,"In case of Road, it is optional.
+ However In case of Rail/Air/Ship enter Transport document No. & Date(i.e the RR No/Airway Bill no/Bill of Lading whichever applicable)",Alphanumeric with maximum 15 characters.No special characters allowed except - /
+Vehicle Number,No,"In case of Transportation by Road ,enter the Vehicle number through which the consignment is transported.
+ In case of Rail/Air/Ship it is not applicable.","First 2 characters of Vehicle No must indicate any state. The format of Vehicle number must be:- 
+ AANNNNNN Eg: KA121234 (or) 
+ AANNANNNN Eg: KA12A1234 (or) 
+ AANNAANNNN Eg: KA12AB1234 (or) 
+ AAANNNN Eg: KAC1234 (or) 
+ AANNNANNNN Eg: KA123A1234
+ DFXXXXXX (for Defence Vehicles)
+ TRXXXXXX (for temporary RC)
+ BPXXXXXX ( for Bhutan )
+ NPXXXXXX ( for Nepal )
+ Refer the Master data for Vehicle State Code"
+Vehicle Type,No,Regular' or 'ODC ( Over-Dimensional Cargo ) ',
+Product Name,No,Name of the product,Alphanumeric with max 100 characters.
+Item Description,No,Additional Description of the Product,Alphanumeric with max 100 characters.
+HSN code,No,HSN code of the Product,Numeric with Maximum 8 numbers
+Item Quantity,No,Quantity of Item,"Decimal(6, 2)"
+Item Unit of Measurement,No,Unit of Measurement.Refer the UQM sheet.,Refer Master Table.
+Taxable Value,Yes,Taxable value of Goods as per the document,"Decimal(16, 2)"
+CGST Rate,"Yes, if applicable","CGST Tax Rate (Enter rate without percentage (%) sign, for example if rate is 9% then enter 9 only. Also if effective GST Rate is 18 then you need to provide only 9 for CGST and 9 for SGST to make effective rate as 18)",
+CGST Amount,"Yes, if applicable",CGST Amount,"Decimal(16, 2)"
+SGST Rate,"No, equal to CGST Rate if CGST Rate is provided","SGST or UTGST Tax Rate (Enter rate without percentage (%) sign, for example if rate is 9% then enter 9 only. Also if effective GST Rate is 18 then you need to provide only 9 for CGST and 9 for SGST to make effective rate as 18)",
+SGST Amount,"Yes, if applicable",SGST or UTGST Amount,"Decimal(16, 2)"
+IGST Rate,"Yes, if applicable","IGST Tax Rate (Enter rate without percentage (%) sign, for example if effective rate is 18% then enter 18 only)",
+IGST Amount,"Yes, if applicable",IGST Amount,"Decimal(16, 2)"
+CESS Rate,"Yes, if applicable","CESS Tax Rate (Enter rate without percentage (%) sign, for example if rate is 2% then enter 2 only)",
+CESS Amount,"Yes, if applicable",CESS Amount,"Decimal(16, 2)"
+CESS Non Advol Rate,,,
+CESS Non Advol Tax Amount,,,
+Other Value,,,
+Other Charges - TCS,,,
+Total Transaction Value,No,The Total Value of the Invoice inclusive of Taxes.,"Decimal(16, 2)"
+Customer Shipping Name,No,Enter the Consignee name to whom the goods are being shipped/delivered,Alphanumeric with maximum 100 characters.
+Customer Shipping Address 1,No,The address where the goods are being shipped/delivered must be provided here.,String (Max length 100).
+Customer Shipping Address 2,No,The address where the goods are being shipped/delivered must be provided here.,String (Max length 180).
+Customer Shipping City,No,The City where the goods are being shipped/delivered must be provided here.,Alphanumeric with maximum 50 characters.
+Customer Shipping Pincode,"Yes, if applicable",The Pincode where the goods are being shipped/delivered must be provided here.,Numeric with 6 characters
+Customer Shipping State,"Yes, if applicable",The State where the goods are being shipped/delivered must be provided here.,
+Supplier Dispatch Name,,,
+Supplier Dispatch Address 1,,,
+Supplier Dispatch Address 2,,,
+Supplier Dispatch Place,,,
+Supplier Dispatch PinCode,,,
+Supplier Dispatch State Code,,,
+My Branch,No,The branch name must be entered here.,String (Max length 30).
+Replace E-way bill,No,If you wish to replace any transaction for which EWB is already generated enter value here.,Y or N meaning Yes or No
+Is this Supply to/from SEZ unit?,No,If you are supplying to an SEZ unit or purchasing from an SEZ unit then enter value here.,"SEZ with payment of GST' in case if IGST is paid.
+ 'SEZ without payment of GST' in case of Supply under Bond/LUT."
+Eway Bill Transaction Type,No,Transaction type of Eway bill. Depends on address values provided,"Regular, Bill From-Dispatch From, Bill To-Ship To, Combination of 2 and 3"
+Sub Type Description,"Yes, if applicable",Sub type description should be provided if the sub type value selected is 'Others',String (Max length 20).
