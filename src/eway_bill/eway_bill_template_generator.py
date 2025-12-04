@@ -289,10 +289,10 @@ class EwayBillTemplateGenerator:
         customer_state_code = self._get_state_code(customer_state)
         
         # Get document number (Serial Number of Challan)
-        document_number = dc_data.get('dc_number', '')
+        document_number = dc_data.get('dc_number', '') or ''
         
         # Clean document number - remove date part if present
-        if '_' in document_number:
+        if document_number and '_' in document_number:
             # Split by underscore and take only the first part (the serial number)
             parts = document_number.split('_')
             # Keep the serial number part only (parts before the last underscore)
