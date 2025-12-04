@@ -399,12 +399,23 @@ class VehicleDataManager:
                 # Count sellers
                 sellers = trip_rows['sender'].nunique()
                 
-                # Get unique parcel types and categories
-                parcel_types = trip_rows['parcel_type'].dropna().unique()
-                parcel_type_str = ', '.join(sorted(parcel_types)) if len(parcel_types) > 0 else ''
+                # Get unique parcel types and categories (with error handling)
+                parcel_type_str = ''
+                category_str = ''
                 
-                categories = trip_rows['category'].dropna().unique()
-                category_str = ', '.join(sorted(categories)) if len(categories) > 0 else ''
+                try:
+                    if 'parcel_type' in trip_rows.columns:
+                        parcel_types = trip_rows['parcel_type'].dropna().unique()
+                        parcel_type_str = ', '.join(sorted(parcel_types.astype(str))) if len(parcel_types) > 0 else ''
+                except Exception as e:
+                    print(f"⚠️ Warning: Could not extract parcel_type: {e}")
+                
+                try:
+                    if 'category' in trip_rows.columns:
+                        categories = trip_rows['category'].dropna().unique()
+                        category_str = ', '.join(sorted(categories.astype(str))) if len(categories) > 0 else ''
+                except Exception as e:
+                    print(f"⚠️ Warning: Could not extract category: {e}")
                 
                 # Create composite trip identifier for UI - use same format as multiple facilities
                 composite_trip_id = f"{trip_ref_number}@{hub}@{facility_name}"
@@ -478,12 +489,23 @@ class VehicleDataManager:
                 # Count sellers
                 sellers = trip_rows['sender'].nunique()
                 
-                # Get unique parcel types and categories
-                parcel_types = trip_rows['parcel_type'].dropna().unique()
-                parcel_type_str = ', '.join(sorted(parcel_types)) if len(parcel_types) > 0 else ''
+                # Get unique parcel types and categories (with error handling)
+                parcel_type_str = ''
+                category_str = ''
                 
-                categories = trip_rows['category'].dropna().unique()
-                category_str = ', '.join(sorted(categories)) if len(categories) > 0 else ''
+                try:
+                    if 'parcel_type' in trip_rows.columns:
+                        parcel_types = trip_rows['parcel_type'].dropna().unique()
+                        parcel_type_str = ', '.join(sorted(parcel_types.astype(str))) if len(parcel_types) > 0 else ''
+                except Exception as e:
+                    print(f"⚠️ Warning: Could not extract parcel_type: {e}")
+                
+                try:
+                    if 'category' in trip_rows.columns:
+                        categories = trip_rows['category'].dropna().unique()
+                        category_str = ', '.join(sorted(categories.astype(str))) if len(categories) > 0 else ''
+                except Exception as e:
+                    print(f"⚠️ Warning: Could not extract category: {e}")
                 
                 # Create composite trip identifier for UI
                 composite_trip_id = f"{trip_ref_number}@{hub}@{from_location}"
