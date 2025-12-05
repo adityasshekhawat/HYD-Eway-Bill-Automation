@@ -61,20 +61,10 @@ class GoogleSheetsSequenceGenerator:
     
     def _get_credentials(self) -> dict:
         """Get Google Sheets credentials from Streamlit secrets or environment"""
-        try:
-            import streamlit as st
-            # Try Streamlit secrets first (for Streamlit Cloud)
-            if 'GOOGLE_SHEETS_CREDENTIALS' in st.secrets:
-                return json.loads(st.secrets['GOOGLE_SHEETS_CREDENTIALS'])
-            elif 'gcp_service_account' in st.secrets:
-                # Alternative format in secrets.toml
-                return dict(st.secrets['gcp_service_account'])
-        except (ImportError, KeyError):
-            pass
-        
-        # Try environment variable
+        # Try environment variable first (for local testing)
         creds_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
         if creds_json:
+            print("✅ Using Google Sheets credentials from environment variable")
             return json.loads(creds_json)
         
         # Try loading from file (local development)
@@ -84,8 +74,23 @@ class GoogleSheetsSequenceGenerator:
             'google_sheets_credentials.json'
         )
         if os.path.exists(creds_file):
+            print("✅ Using Google Sheets credentials from file")
             with open(creds_file, 'r') as f:
                 return json.load(f)
+        
+        # Try Streamlit secrets (for Streamlit Cloud)
+        try:
+            import streamlit as st
+            if 'GOOGLE_SHEETS_CREDENTIALS' in st.secrets:
+                print("✅ Using Google Sheets credentials from Streamlit secrets (GOOGLE_SHEETS_CREDENTIALS)")
+                return json.loads(st.secrets['GOOGLE_SHEETS_CREDENTIALS'])
+            elif 'gcp_service_account' in st.secrets:
+                # Alternative format in secrets.toml
+                print("✅ Using Google Sheets credentials from Streamlit secrets (gcp_service_account)")
+                return dict(st.secrets['gcp_service_account'])
+        except (ImportError, KeyError, FileNotFoundError):
+            # st.secrets might throw FileNotFoundError if secrets.toml doesn't exist
+            pass
         
         raise ValueError(
             "Google Sheets credentials not found. Please set up credentials. "
@@ -94,6 +99,12 @@ class GoogleSheetsSequenceGenerator:
     
     def _get_or_create_spreadsheet(self) -> str:
         """Get existing spreadsheet or create new one"""
+        # Check if user specified a spreadsheet ID (for quota issues)
+        specified_id = os.getenv('GOOGLE_SHEETS_SPREADSHEET_ID')
+        if specified_id:
+            print(f"✅ Using specified spreadsheet ID: {specified_id}")
+            return specified_id
+        
         spreadsheet_name = 'DC_Sequences_Database'
         
         try:
@@ -104,12 +115,19 @@ class GoogleSheetsSequenceGenerator:
         except gspread.SpreadsheetNotFound:
             # Create new spreadsheet
             print(f"📝 Creating new spreadsheet: {spreadsheet_name}")
-            spreadsheet = self.client.create(spreadsheet_name)
-            
-            # Share with yourself (makes it visible in Google Drive)
-            # Note: This requires the service account email to be known
-            print(f"✅ Created spreadsheet: {spreadsheet.url}")
-            return spreadsheet.id
+            try:
+                spreadsheet = self.client.create(spreadsheet_name)
+                print(f"✅ Created spreadsheet: {spreadsheet.url}")
+                return spreadsheet.id
+            except Exception as e:
+                if "quota" in str(e).lower() or "403" in str(e):
+                    raise ValueError(
+                        "Google Drive storage quota exceeded. Please either:\n"
+                        "1. Free up space in Google Drive, OR\n"
+                        "2. Create a spreadsheet manually and set GOOGLE_SHEETS_SPREADSHEET_ID\n"
+                        f"   Error: {e}"
+                    )
+                raise
     
     def _get_or_create_worksheet(self):
         """Get or create the sequences worksheet"""
@@ -176,20 +194,30 @@ class GoogleSheetsSequenceGenerator:
                 # Update or insert
                 if row_index:
                     # Update existing row
-                    self.worksheet.update(f'B{row_index}:D{row_index}', [[
-                        next_value,
-                        datetime.now().isoformat(),
-                        int(all_values[row_index-1][3] or 0) + 1
-                    ]])
+                    # Safely get the increment count (handle rows with fewer than 4 columns)
+                    existing_row = all_values[row_index-1]
+                    increment_count = 1
+                    if len(existing_row) > 3 and existing_row[3]:
+                        try:
+                            increment_count = int(existing_row[3]) + 1
+                        except (ValueError, TypeError):
+                            increment_count = 1
+                    
+                    update_range = f'B{row_index}:D{row_index}'
+                    update_values = [[next_value, datetime.now().isoformat(), increment_count]]
+                    print(f"🔄 Updating Google Sheets: {update_range} = {update_values}")
+                    
+                    result = self.worksheet.update(update_range, update_values)
+                    print(f"✅ Google Sheets update result: {result}")
                 else:
                     # Insert new row
                     next_row = len(all_values) + 1
-                    self.worksheet.update(f'A{next_row}:D{next_row}', [[
-                        sequence_name,
-                        next_value,
-                        datetime.now().isoformat(),
-                        1
-                    ]])
+                    update_range = f'A{next_row}:D{next_row}'
+                    update_values = [[sequence_name, next_value, datetime.now().isoformat(), 1]]
+                    print(f"🔄 Inserting new row in Google Sheets: {update_range} = {update_values}")
+                    
+                    result = self.worksheet.update(update_range, update_values)
+                    print(f"✅ Google Sheets insert result: {result}")
                 
                 print(f"✅ Incremented {sequence_name}: {current_value} → {next_value}")
                 return next_value
