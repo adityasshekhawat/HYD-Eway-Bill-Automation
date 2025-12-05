@@ -221,9 +221,14 @@ class DCSequenceManager:
         
     def reserve_dc_number(self, company_name: str, facility_name: str, hub_value: str = None) -> str:
         """
-        Reserve a DC number without incrementing the sequence.
-        This is used in a two-step process where we first reserve a number,
-        then confirm it only after successful file generation.
+        Reserve and immediately increment the DC number atomically.
+        
+        CHANGED: No longer uses a two-step reserve/confirm pattern because:
+        1. reserved_numbers cache is lost on Streamlit rerun (new instance)
+        2. No way to guarantee confirmation is called
+        3. Race conditions between reserve and confirm
+        
+        Now increments immediately and returns the new DC number.
         
         Args:
             company_name: Company name (e.g., AMOLAKCHAND, BODEGA)
@@ -231,7 +236,7 @@ class DCSequenceManager:
             hub_value: Optional hub value (e.g., 'HYD_NCH') for hub-specific sequences
             
         Returns:
-            Reserved DC number
+            New DC number (already incremented in Google Sheets/Supabase)
         """
         company_code = self.company_codes.get(company_name.upper(), 'XX')
         facility_code = self.facility_codes.get(facility_name, 'XX')
@@ -249,24 +254,20 @@ class DCSequenceManager:
             prefix = f"{company_code}DC{facility_code}"
             sequence_name = f"{prefix.lower()}_seq"
         
-        # Generate a unique reservation ID
-        import uuid
-        reservation_id = str(uuid.uuid4())
-        
-        # Get the next sequence number without incrementing
-        current_seq = self.get_current_sequence(sequence_name)
-        next_seq = current_seq + 1
-        
-        # Store the reservation
-        dc_number = f"{prefix}{next_seq:08d}"
-        self.reserved_numbers[dc_number] = {
-            'sequence_name': sequence_name,
-            'reservation_id': reservation_id,
-            'timestamp': datetime.now().isoformat()
-        }
-        
-        print(f"🔄 Reserved DC number: {dc_number} (will be confirmed later)")
-        return dc_number
+        # ATOMIC: Increment sequence immediately (no reservation needed)
+        try:
+            next_seq = self.generator.get_next_sequence(sequence_name)
+            dc_number = f"{prefix}{next_seq:08d}"
+            print(f"✅ Generated DC number: {dc_number} (sequence incremented immediately)")
+            return dc_number
+        except Exception as e:
+            print(f"❌ Failed to generate DC number: {e}")
+            # Fallback: use current + 1 (risky but better than crashing)
+            current_seq = self.get_current_sequence(sequence_name)
+            next_seq = current_seq + 1
+            dc_number = f"{prefix}{next_seq:08d}"
+            print(f"⚠️  Using fallback DC number: {dc_number} (NOT saved to database!)")
+            return dc_number
     
     def confirm_dc_number(self, dc_number: str) -> bool:
         """
