@@ -213,7 +213,8 @@ class VehicleDCGenerator:
             hub_value: Optional hub value (e.g., 'HYD_NCH') for hub-specific sequences
             
         Returns:
-            DC number in new format (e.g., AKDCAH000001, AKDCHYDNCH00000001)
+            DC number in new format (e.g., AKDCAH000001, AKDCHYDNCH000001)
+            Max 16 chars: 2(company) + 2(DC) + 2-3(facility) + 0-3(hub) + 6(sequence)
         """
         if not self.new_sequence_manager:
             raise RuntimeError("DC sequence manager not available")

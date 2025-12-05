@@ -50,7 +50,7 @@ Format: {Company}DC{Facility}{Hub}{Sequence}
            └─────────────────────────── Company (2 letters)
 
 Examples:
-  AKDCHYDNCH00000001  → Amolakchand, Hyderabad, Nacharam, Seq #1
+  AKDCHYDNCH000001  → Amolakchand, Hyderabad, Nacharam, Seq #1 (16 chars)
   BDDCHYDBAL00000042  → Bodega, Hyderabad, Balanagar, Seq #42
   AKDCHYDSGR00000100  → Amolakchand, Hyderabad, Sangareddy, Seq #100
 ```
@@ -65,7 +65,7 @@ Format: {Company}DC{Facility}{Sequence}
            └────────────────────── Company (2 letters)
 
 Examples:
-  AKDCAH00000001  → Amolakchand, Arihant, Seq #1
+  AKDCAH000001  → Amolakchand, Arihant, Seq #1 (12 chars)
   BDDCSG00000042  → Bodega, Sutlej/Gomati, Seq #42
 ```
 
@@ -75,12 +75,12 @@ Examples:
 
 | Hub Code | Hub Name | Example DC Number |
 |----------|----------|-------------------|
-| **BVG** | Boduppal Gudem | AKDCHYDBVG00000001 |
-| **SGR** | Santosh Nagar | AKDCHYDSGR00000001 |
-| **BAL** | Balanagar | AKDCHYDBAL00000001 |
-| **KMP** | Kompally | AKDCHYDKMP00000001 |
-| **NCH** | Nacharam | AKDCHYDNCH00000001 |
-| **SAN** | Sangareddy | AKDCHYDSAN00000001 |
+| **BVG** | Boduppal Gudem | AKDCHYDBVG000001 (16 chars) |
+| **SGR** | Santosh Nagar | AKDCHYDSGR000001 (16 chars) |
+| **BAL** | Balanagar | AKDCHYDBAL000001 (16 chars) |
+| **KMP** | Kompally | AKDCHYDKMP000001 (16 chars) |
+| **NCH** | Nacharam | AKDCHYDNCH000001 (16 chars) |
+| **SAN** | Sangareddy | AKDCHYDSAN000001 (16 chars) |
 
 **Total:** 12 independent sequences (AK + BD × 6 hubs)
 

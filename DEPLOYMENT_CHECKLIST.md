@@ -6,8 +6,8 @@
 **Status:** ✅ **ALREADY DONE!**
 
 Current format includes hub codes:
-- `AKDCHYDNCH00000001` = AK + DC + HYD + NCH + sequence
-- `BDDCHYDBAL00000001` = BD + DC + HYD + BAL + sequence
+- `AKDCHYDNCH000001` = AK + DC + HYD + NCH + sequence (16 chars max)
+- `BDDCHYDBAL000001` = BD + DC + HYD + BAL + sequence (16 chars max)
 
 No action needed! ✨
 
@@ -98,7 +98,7 @@ Check Google Drive:
 ## 🎉 Success!
 
 When complete, your app will:
-- ✅ Generate DCs with hub codes: `AKDCHYDNCH00000001`
+- ✅ Generate DCs with hub codes: `AKDCHYDNCH000001` (max 16 chars)
 - ✅ Store sequences in Google Sheets (persists forever)
 - ✅ Work perfectly on Streamlit Cloud
 - ✅ Auto-fallback to local if Google Sheets unavailable
