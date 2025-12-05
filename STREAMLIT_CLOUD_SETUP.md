@@ -270,3 +270,4 @@ You'll know it's working when:
 
 **Next:** Follow the steps above to set up Google Sheets API and deploy to Streamlit Cloud.
 
+

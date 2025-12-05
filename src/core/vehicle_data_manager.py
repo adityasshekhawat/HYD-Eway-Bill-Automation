@@ -358,8 +358,15 @@ class VehicleDataManager:
             print(f"❌ Error getting routes: {str(e)}")
             return []
     
-    def get_trips_for_route(self, from_location, to_location):
-        """Get all trips for a specific route (single facility)"""
+    def get_trips_for_route(self, from_location, to_location, parcel_type_filter=None, category_filter=None):
+        """Get all trips for a specific route (single facility)
+        
+        Args:
+            from_location: Facility name
+            to_location: Hub name
+            parcel_type_filter: List of parcel types to include (None = all)
+            category_filter: List of categories to include (None = all)
+        """
         if self.raw_data is None:
             return []
             
@@ -369,6 +376,18 @@ class VehicleDataManager:
                 (self.raw_data['name'] == from_location) & 
                 (self.raw_data['hub'] == to_location)
             ]
+            
+            # Apply parcel_type filter if specified
+            if parcel_type_filter and len(parcel_type_filter) > 0 and 'parcel_type' in route_data.columns:
+                print(f"🔍 Applying parcel_type filter: {parcel_type_filter}")
+                route_data = route_data[route_data['parcel_type'].isin(parcel_type_filter)]
+                print(f"✅ After parcel_type filter: {len(route_data)} rows")
+            
+            # Apply category filter if specified
+            if category_filter and len(category_filter) > 0 and 'category' in route_data.columns:
+                print(f"🔍 Applying category filter: {category_filter}")
+                route_data = route_data[route_data['category'].isin(category_filter)]
+                print(f"✅ After category filter: {len(route_data)} rows")
             
             # Use the same composite key format as multiple facilities for consistency
             # Group by composite key (trip_ref_number, hub, name) to maintain unified format
@@ -443,8 +462,15 @@ class VehicleDataManager:
             traceback.print_exc()
             return []
     
-    def get_trips_for_multiple_facilities(self, from_locations, to_location):
-        """Get all trips for multiple facilities to a single destination"""
+    def get_trips_for_multiple_facilities(self, from_locations, to_location, parcel_type_filter=None, category_filter=None):
+        """Get all trips for multiple facilities to a single destination
+        
+        Args:
+            from_locations: List of facility names
+            to_location: Hub name
+            parcel_type_filter: List of parcel types to include (None = all)
+            category_filter: List of categories to include (None = all)
+        """
         if self.raw_data is None:
             return []
             
@@ -454,6 +480,18 @@ class VehicleDataManager:
                 (self.raw_data['name'].isin(from_locations)) & 
                 (self.raw_data['hub'] == to_location)
             ]
+            
+            # Apply parcel_type filter if specified
+            if parcel_type_filter and len(parcel_type_filter) > 0 and 'parcel_type' in route_data.columns:
+                print(f"🔍 Applying parcel_type filter: {parcel_type_filter}")
+                route_data = route_data[route_data['parcel_type'].isin(parcel_type_filter)]
+                print(f"✅ After parcel_type filter: {len(route_data)} rows")
+            
+            # Apply category filter if specified
+            if category_filter and len(category_filter) > 0 and 'category' in route_data.columns:
+                print(f"🔍 Applying category filter: {category_filter}")
+                route_data = route_data[route_data['category'].isin(category_filter)]
+                print(f"✅ After category filter: {len(route_data)} rows")
             
             if route_data.empty:
                 print(f"❌ No data found for routes from {from_locations} to {to_location}")
