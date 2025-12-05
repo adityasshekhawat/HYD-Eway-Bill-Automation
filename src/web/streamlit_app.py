@@ -512,16 +512,13 @@ def group_trips_page():
     st.subheader(f"🚛 Available Trips: {st.session_state.selected_route['from']} → {st.session_state.selected_route['to']}")
     
     # Get already assigned trip refs to filter them out
+    # NEW: We'll store current filters and check overlap later
+    current_parcel_type_filter = None
+    current_category_filter = None
     assigned_trip_refs = set()
-    for assignment in st.session_state.vehicle_assignments:
-        # Handle both old and new trip ID formats
-        for trip_ref in assignment['trip_refs']:
-            if 'composite_trip_id' in trip_ref if isinstance(trip_ref, dict) else False:
-                assigned_trip_refs.add(trip_ref['composite_trip_id'])
-            elif isinstance(trip_ref, dict) and 'trip_ref_number' in trip_ref:
-                assigned_trip_refs.add(trip_ref['trip_ref_number'])
-            else:
-                assigned_trip_refs.add(str(trip_ref))
+    
+    # We'll populate this after filters are determined
+    # For now, just extract trip IDs without filter checking (we'll filter later)
     
     # Store current state to detect changes
     if 'last_assigned_count' not in st.session_state:
@@ -618,6 +615,52 @@ def group_trips_page():
                     )
             else:
                 category_filter = None
+            
+            # NOW: Build assigned_trip_refs by checking filter overlap (Option 1 implementation)
+            # Only exclude trips if current filters overlap with filters used during assignment
+            current_parcel_type_filter = parcel_type_filter
+            current_category_filter = category_filter
+            
+            def filters_overlap(current_filter, assigned_filter):
+                """Check if current filter overlaps with assigned filter
+                
+                Args:
+                    current_filter: List of currently selected values (None = all)
+                    assigned_filter: List of values that were selected during assignment (None = all)
+                
+                Returns:
+                    True if there's overlap (trip should be hidden), False otherwise
+                """
+                # If either is None or empty, treat as "all values"
+                if not current_filter or not assigned_filter:
+                    # If assigned had no filter (all selected), and current has specific filter, no overlap
+                    # If assigned had specific filter, and current has no filter (all), overlap exists
+                    # Safest: if either is "all", consider it overlap
+                    return True
+                
+                # Check if any value in current filter was also in assigned filter
+                return bool(set(current_filter) & set(assigned_filter))
+            
+            assigned_trip_refs = set()
+            for assignment in st.session_state.vehicle_assignments:
+                # Get the filters that were active when this assignment was made
+                assigned_parcel_types = assignment.get('assigned_parcel_types', None)
+                assigned_categories = assignment.get('assigned_categories', None)
+                
+                # Check if current filters overlap with assigned filters
+                parcel_type_overlap = filters_overlap(current_parcel_type_filter, assigned_parcel_types)
+                category_overlap = filters_overlap(current_category_filter, assigned_categories)
+                
+                # Only exclude if BOTH filters overlap (AND logic)
+                if parcel_type_overlap and category_overlap:
+                    # Handle both old and new trip ID formats
+                    for trip_ref in assignment['trip_refs']:
+                        if 'composite_trip_id' in trip_ref if isinstance(trip_ref, dict) else False:
+                            assigned_trip_refs.add(trip_ref['composite_trip_id'])
+                        elif isinstance(trip_ref, dict) and 'trip_ref_number' in trip_ref:
+                            assigned_trip_refs.add(trip_ref['trip_ref_number'])
+                        else:
+                            assigned_trip_refs.add(str(trip_ref))
             
             # ALWAYS re-query trips with filters applied (Option B implementation)
             # This ensures totals are calculated from filtered data, not cached unfiltered data
@@ -781,7 +824,9 @@ def group_trips_page():
                             'assignment_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                             'trip_count': len(selected_trips),
                             'trip_format': 'composite',  # Always composite now
-                            'facilities': trip_facilities  # Always include facilities
+                            'facilities': trip_facilities,  # Always include facilities
+                            'assigned_parcel_types': current_parcel_type_filter,  # NEW: Track active parcel_type filter
+                            'assigned_categories': current_category_filter  # NEW: Track active category filter
                         }
                         
                         # Add detailed trip information for better tracking
@@ -826,6 +871,16 @@ def group_trips_page():
                 with col_info:
                     st.write(f"**Route**: {assignment['from_location']} → {assignment['to_location']}")
                     st.write(f"**Assigned**: {assignment['assignment_time']}")
+                    
+                    # Show active filters if they were used during assignment
+                    filter_info_parts = []
+                    if assignment.get('assigned_parcel_types'):
+                        filter_info_parts.append(f"Parcel: {', '.join(assignment['assigned_parcel_types'])}")
+                    if assignment.get('assigned_categories'):
+                        filter_info_parts.append(f"Category: {', '.join(assignment['assigned_categories'])}")
+                    
+                    if filter_info_parts:
+                        st.write(f"**Filters**: {' | '.join(filter_info_parts)}")
                     
                     # Show trips in a more manageable format
                     st.write("**Trip Details:**")
