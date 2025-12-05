@@ -29,11 +29,13 @@ except ImportError:
 # This replaces hardcoded Bangalore-specific values
 try:
     from ..core.dc_template_generator import HUB_CONSTANTS, FACILITY_ADDRESS_MAPPING
+    from ..core.dynamic_hub_constants import get_dynamic_hub_constants
 except ImportError:
     # Fallback for standalone execution
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from core.dc_template_generator import HUB_CONSTANTS, FACILITY_ADDRESS_MAPPING
+    from core.dynamic_hub_constants import get_dynamic_hub_constants
 
 def get_hub_pincode_from_address(hub_address):
     """Extract pincode from hub address"""
@@ -313,7 +315,6 @@ class DCPDFGenerator:
         
         # Dynamic lookup with actual state for correct GSTIN
         if facility_state:
-            from ..core.dynamic_hub_constants import get_dynamic_hub_constants
             dhc = get_dynamic_hub_constants()
             hub_details = dhc.get_hub_constants(hub_key, state=facility_state, fc_name=facility_name)
             print(f"✅ PDF: Using DYNAMIC hub constants for {hub_key} in {facility_state}")
