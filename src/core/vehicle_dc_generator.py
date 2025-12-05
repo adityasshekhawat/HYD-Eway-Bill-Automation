@@ -290,7 +290,7 @@ class VehicleDCGenerator:
             hub_value = dc_data_item.get('hub_name', '') or dc_data_item.get('hub', '')  # e.g., 'HYD_NCH', 'HYD_BAL'
             print(f"📍 Hub value for DC sequencing: {hub_value or 'N/A'}")
             
-            # FIXED: Reserve DC number first (doesn't increment sequence yet)
+            # Generate DC number (increments sequence immediately - atomic operation)
             dc_number = self.new_sequence_manager.reserve_dc_number(hub_type, facility_name, hub_value)
             ws.title = f"DC_{dc_number}"
             
@@ -328,11 +328,9 @@ class VehicleDCGenerator:
             
             wb.save(file_path)
             
-            # FIXED: Confirm DC number only after successful save
-            if self.new_sequence_manager.confirm_dc_number(dc_number):
-                print(f"✅ DC sequence confirmed for {dc_number}")
-            else:
-                print(f"⚠️ Failed to confirm DC sequence for {dc_number}")
+            # NOTE: DC sequence already incremented atomically in reserve_dc_number()
+            # No separate confirmation step needed (fixes Streamlit cache issue)
+            print(f"✅ DC Excel saved with sequence number: {dc_number}")
             
             # Clean up temporary logo files
             cleanup_temp_files(ws)
