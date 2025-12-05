@@ -264,8 +264,18 @@ class EwayBillTemplateGenerator:
         sender_state_code_full = self._format_state_code_label(supplier_state_code, supplier_state)
         receiver_state_code_full = self._format_state_code_label(customer_state_code, customer_state)
         
+        # CRITICAL: GSTIN lookup based on FACILITY STATE (supplier), not destination (customer)
+        # supplier_state comes from dc_data.get('facility_state') - where FC is located
+        # This ensures correct state-specific GSTIN from final_address.csv
         from_gstin = self._get_gstin(hub_type, supplier_state or customer_state)
         to_gstin = self._get_gstin(hub_type, customer_state or supplier_state)
+        
+        print(f"🔐 GSTIN Lookup:")
+        print(f"   Company: {hub_type}")
+        print(f"   Supplier State (Facility): {supplier_state}")
+        print(f"   Customer State (Hub): {customer_state}")
+        print(f"   FROM GSTIN: {from_gstin}")
+        print(f"   TO GSTIN: {to_gstin}")
         
         # Format date as DD/MM/YYYY (e.g., 24/06/2025)
         doc_date = dc_data.get('date', datetime.now())
@@ -766,16 +776,36 @@ class EwayBillTemplateGenerator:
         return ''
     
     def _get_gstin(self, company_name, state_name):
-        """Fetch GSTIN for a company/state combination with fallback values"""
+        """
+        Fetch GSTIN for a company/state combination with fallback values
+        
+        CRITICAL: GSTIN is based on (company, state) tuple from final_address.csv
+        - State should be FACILITY state (where FC is located), not destination hub
+        - Example: AMOLAKCHAND in Telangana → 36AAPCA1708D1ZX
+        - Example: AMOLAKCHAND in Karnataka → 29AAPCA1708D1ZS
+        
+        Args:
+            company_name: Company name (AMOLAKCHAND, BODEGA, SOURCINGBEE)
+            state_name: State name (facility/FC state, not hub state)
+            
+        Returns:
+            GSTIN string or empty string if not found
+        """
         normalized_company = (company_name or '').upper()
         normalized_state = (state_name or '').strip()
         
         if self.config_loader and normalized_state:
             gstin = self.config_loader.get_gstin(normalized_company, normalized_state)
             if gstin:
+                print(f"   ✅ GSTIN lookup: {normalized_company} in {normalized_state} = {gstin}")
                 return gstin
+            else:
+                print(f"   ⚠️  GSTIN not found for {normalized_company} in {normalized_state}, using fallback")
         
-        return self.fallback_gstin_mapping.get(normalized_company, '')
+        fallback = self.fallback_gstin_mapping.get(normalized_company, '')
+        if fallback:
+            print(f"   ⚠️  Using fallback GSTIN: {fallback}")
+        return fallback
     
     def _normalize_name(self, name: str) -> str:
         """Normalize facility names by stripping spaces, punctuation, and casing"""
