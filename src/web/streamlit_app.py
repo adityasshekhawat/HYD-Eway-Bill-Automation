@@ -619,11 +619,9 @@ def group_trips_page():
             else:
                 category_filter = None
             
-            # Re-query trips with filters applied (Option B implementation)
-            if has_data_manager and (facility_filter != all_facilities or 
-                                     (parcel_type_filter and len(parcel_type_filter) < len(all_parcel_types)) or
-                                     (category_filter and len(category_filter) < len(all_categories))):
-                # Filters have been changed - re-query with filters
+            # ALWAYS re-query trips with filters applied (Option B implementation)
+            # This ensures totals are calculated from filtered data, not cached unfiltered data
+            if has_data_manager:
                 with st.spinner("🔍 Applying filters..."):
                     filtered_trips = st.session_state.data_manager.get_trips_for_multiple_facilities(
                         facility_filter if facility_filter else all_facilities,
@@ -642,8 +640,7 @@ def group_trips_page():
                     else:
                         available_trips_df = pd.DataFrame()  # Empty dataframe
             else:
-                # No filters applied or no data manager - use original data
-                # Just apply facility filter if needed
+                # Fallback: No data manager - use cached data with facility filter
                 if facility_filter and len(facility_filter) < len(all_facilities):
                     available_trips_df = available_trips_df[available_trips_df['from'].isin(facility_filter)]
             
