@@ -300,7 +300,29 @@ class DCPDFGenerator:
         
         # Get hub details
         hub_key = dc_data.get('hub_type', 'SOURCINGBEE')
-        hub_details = HUB_CONSTANTS.get(hub_key, {})
+        
+        # CRITICAL FIX: Use FACILITY STATE for GSTIN lookup (FC location, not destination hub)
+        # GSTIN is based on where the FC is located (seller), not where goods are going
+        facility_state = dc_data.get('facility_state', '')
+        facility_name = dc_data.get('facility_name', '')
+        
+        # If facility_state not available, fallback to hub_state
+        if not facility_state:
+            facility_state = dc_data.get('hub_state', '')
+            print(f"⚠️  PDF: Facility state not found, using hub state: {facility_state}")
+        
+        # Dynamic lookup with actual state for correct GSTIN
+        if facility_state:
+            from ..core.dynamic_hub_constants import get_dynamic_hub_constants
+            dhc = get_dynamic_hub_constants()
+            hub_details = dhc.get_hub_constants(hub_key, state=facility_state, fc_name=facility_name)
+            print(f"✅ PDF: Using DYNAMIC hub constants for {hub_key} in {facility_state}")
+            print(f"   Facility: {facility_name}")
+            print(f"   GSTIN: {hub_details.get('sender_gstin', 'N/A')}")
+        else:
+            # Fallback to static if state not available
+            hub_details = HUB_CONSTANTS.get(hub_key, {})
+            print(f"⚠️  PDF: Using STATIC hub constants for {hub_key} (state not available)")
         
         # Get dynamic hub state information - no hardcoded fallbacks
         hub_state = dc_data.get('hub_state', hub_details.get('state', ''))
@@ -360,13 +382,13 @@ class DCPDFGenerator:
                 Paragraph(dc_data.get('hub_address', ''), self.styles['DCSmall']),  # F9:I9
                 "", "", ""  # G9, H9, I9 (merged with F9)
             ],
-            # Row 10: GSTIN
+            # Row 10: GSTIN - CRITICAL: Uses dynamic GSTIN from facility_state
             [
                 Paragraph("<b>GSTIN/UIN:</b>", self.styles['DCHeader']),  # A10
-                Paragraph(hub_details.get('sender_gstin', ''), self.styles['DCData']),  # B10:D10
+                Paragraph(hub_details.get('sender_gstin', ''), self.styles['DCData']),  # B10:D10 - Dynamic GSTIN
                 "", "",  # C10, D10 (merged with B10)
                 Paragraph("<b>GSTIN/UIN:</b>", self.styles['DCHeader']),  # E10
-                Paragraph(hub_details.get('sender_gstin', ''), self.styles['DCData']),  # F10:I10
+                Paragraph(hub_details.get('sender_gstin', ''), self.styles['DCData']),  # F10:I10 - Dynamic GSTIN
                 "", "", ""  # G10, H10, I10 (merged with F10)
             ],
             # Row 11: FSSAI (blank as per requirement)
