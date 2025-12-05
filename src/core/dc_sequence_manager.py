@@ -7,7 +7,11 @@ Handles the new format: {Company}{DC}{Facility}{SequentialNumber}
 - Hub (optional): NCH, BAL, BVG, etc. (for Hyderabad)
 - Sequential: 6-digit number (000001 to 999999) - fits 16 char limit
 
-NOW WITH GOOGLE SHEETS PERSISTENCE FOR PRODUCTION RELIABILITY
+PERSISTENCE BACKENDS (priority order):
+1. GitHub (RECOMMENDED) - Free, unlimited, version controlled
+2. Google Sheets - Requires credentials, storage quota limits
+3. Supabase - Requires credentials and quota
+4. Local JSON - Ephemeral on Streamlit Cloud (not recommended)
 """
 
 import os
@@ -114,45 +118,64 @@ class LocalSequenceGenerator:
 
 class DCSequenceManager:
     def __init__(self):
-        # Try sequence generators in order: Google Sheets → Supabase → Local JSON
+        # Try sequence generators in order: GitHub → Google Sheets → Supabase → Local JSON
         
-        # 1. Try Google Sheets first (best for Streamlit Cloud)
+        # 1. Try GitHub first (BEST for Streamlit Cloud - free, reliable, no quota limits)
         try:
-            print("🔄 Attempting to initialize Google Sheets sequence generator...")
-            from .google_sheets_sequence_generator import GoogleSheetsSequenceGenerator
-            self.generator = GoogleSheetsSequenceGenerator()
-            print("✅ Using Google Sheets sequence generator")
+            print("🔄 Attempting to initialize GitHub sequence generator...")
+            from .github_sequence_generator import GitHubSequenceGenerator
+            self.generator = GitHubSequenceGenerator()
+            print("✅ Using GitHub sequence generator")
             
             # Test the connection
             try:
                 test_seq = self.generator.get_current_sequence_value('akdcah_seq')
-                print(f"✅ Google Sheets connection test successful: akdcah_seq = {test_seq}")
+                print(f"✅ GitHub connection test successful: akdcah_seq = {test_seq}")
             except Exception as test_error:
-                print(f"❌ Google Sheets connection test failed: {test_error}")
+                print(f"❌ GitHub connection test failed: {test_error}")
                 raise test_error
                 
-        except Exception as gs_error:
-            print(f"⚠️ Google Sheets unavailable ({type(gs_error).__name__}), trying Supabase...")
+        except Exception as gh_error:
+            print(f"⚠️ GitHub unavailable ({type(gh_error).__name__}), trying Google Sheets...")
             
-            # 2. Try Supabase as fallback
+            # 2. Try Google Sheets as fallback
             try:
-                print("🔄 Attempting to initialize Supabase sequence generator...")
-                self.generator = SupabaseSequenceGenerator()
-                print("✅ Using Supabase sequence generator")
+                print("🔄 Attempting to initialize Google Sheets sequence generator...")
+                from .google_sheets_sequence_generator import GoogleSheetsSequenceGenerator
+                self.generator = GoogleSheetsSequenceGenerator()
+                print("✅ Using Google Sheets sequence generator")
                 
-                # Test the connection immediately
+                # Test the connection
                 try:
                     test_seq = self.generator.get_current_sequence_value('akdcah_seq')
-                    print(f"✅ Supabase connection test successful: akdcah_seq = {test_seq}")
+                    print(f"✅ Google Sheets connection test successful: akdcah_seq = {test_seq}")
                 except Exception as test_error:
-                    print(f"❌ Supabase connection test failed: {test_error}")
+                    print(f"❌ Google Sheets connection test failed: {test_error}")
                     raise test_error
                     
-            except Exception as sb_error:
-                print(f"⚠️ Supabase unavailable ({type(sb_error).__name__}), using local sequence generator")
-                print(f"   Google Sheets error: {gs_error}")
-                print(f"   Supabase error: {sb_error}")
-                self.generator = LocalSequenceGenerator()
+            except Exception as gs_error:
+                print(f"⚠️ Google Sheets unavailable ({type(gs_error).__name__}), trying Supabase...")
+                
+                # 3. Try Supabase as fallback
+                try:
+                    print("🔄 Attempting to initialize Supabase sequence generator...")
+                    self.generator = SupabaseSequenceGenerator()
+                    print("✅ Using Supabase sequence generator")
+                    
+                    # Test the connection immediately
+                    try:
+                        test_seq = self.generator.get_current_sequence_value('akdcah_seq')
+                        print(f"✅ Supabase connection test successful: akdcah_seq = {test_seq}")
+                    except Exception as test_error:
+                        print(f"❌ Supabase connection test failed: {test_error}")
+                        raise test_error
+                        
+                except Exception as sb_error:
+                    print(f"⚠️ Supabase unavailable ({type(sb_error).__name__}), using local sequence generator")
+                    print(f"   GitHub error: {gh_error}")
+                    print(f"   Google Sheets error: {gs_error}")
+                    print(f"   Supabase error: {sb_error}")
+                    self.generator = LocalSequenceGenerator()
             
         self.company_codes = {'AMOLAKCHAND': 'AK', 'BODEGA': 'BD', 'SOURCINGBEE': 'SB'}
         self.facility_codes = {
