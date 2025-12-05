@@ -329,7 +329,29 @@ def create_dc_template(ws, product_data_start_row):
 def populate_dc_data(ws, dc_data):
     """Populate all DC data, including header and footer, into an openpyxl worksheet."""
     hub_key = dc_data.get('hub_type') # e.g., 'AMOLAKCHAND'
-    hub_details = HUB_CONSTANTS.get(hub_key, {})
+    
+    # CRITICAL FIX: Use FACILITY state for GSTIN lookup (FC location, not destination hub)
+    # GSTIN is based on where the FC is located (seller), not where goods are going
+    facility_state = dc_data.get('facility_state', '')
+    facility_name = dc_data.get('facility_name', '')
+    
+    # If facility_state not available, fallback to hub_state
+    if not facility_state:
+        facility_state = dc_data.get('hub_state', '')
+        print(f"⚠️  Facility state not found, using hub state: {facility_state}")
+    
+    # Dynamic lookup with actual state for correct GSTIN
+    if facility_state:
+        from .dynamic_hub_constants import get_dynamic_hub_constants
+        dhc = get_dynamic_hub_constants()
+        hub_details = dhc.get_hub_constants(hub_key, state=facility_state, fc_name=facility_name)
+        print(f"✅ Using DYNAMIC hub constants for {hub_key} in {facility_state}")
+        print(f"   Facility: {facility_name}")
+        print(f"   GSTIN: {hub_details.get('sender_gstin', 'N/A')}")
+    else:
+        # Fallback to static if state not available
+        hub_details = HUB_CONSTANTS.get(hub_key, {})
+        print(f"⚠️  Using STATIC hub constants for {hub_key} (state not available)")
 
     # ✅ CITY-AGNOSTIC: Use dynamic hub data if available, no hardcoded fallbacks
     place_of_supply = dc_data.get('place_of_supply', hub_details.get('place_of_supply', ''))
