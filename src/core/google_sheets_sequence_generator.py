@@ -288,3 +288,4 @@ class GoogleSheetsSequenceGenerator:
             print(f"❌ Error setting sequence: {e}")
             return False
 
+

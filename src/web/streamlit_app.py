@@ -505,6 +505,9 @@ def group_trips_page():
     if 'composite_trip_id' in trips_df.columns:
         st.info("🎯 **Enhanced Trip Grouping**: This system now properly handles cases where the same trip reference number exists across multiple facilities. Each facility-specific trip is shown separately with clear facility identification in the 'Facility' column.")
     
+    # Check if we have the raw data manager available
+    has_data_manager = hasattr(st.session_state, 'data_manager') and st.session_state.data_manager is not None
+    
     # Main content area - full width
     st.subheader(f"🚛 Available Trips: {st.session_state.selected_route['from']} → {st.session_state.selected_route['to']}")
     
@@ -547,24 +550,44 @@ def group_trips_page():
         else:
             st.write(f"📋 **{len(available_trips_df)} unassigned trips available for selection:**")
             
-            # Check if new filter columns exist (backward compatibility)
-            has_parcel_type = 'parcel_type' in available_trips_df.columns
-            has_category = 'category' in available_trips_df.columns
+            # Filter controls - we'll get all unique values from raw data
+            all_facilities = st.session_state.selected_route['facilities']
             
-            # Show warning if old data format detected
-            if not has_parcel_type or not has_category:
-                st.warning("⚠️ Old data format detected. Please **clear session** and **reload data** in Step 1 to enable Parcel Type and Category filters.")
+            # Get unique parcel types and categories from raw data if available
+            all_parcel_types = []
+            all_categories = []
             
-            # Filter controls in columns (adjust based on available filters)
-            if has_parcel_type and has_category:
+            if has_data_manager:
+                try:
+                    raw_data = st.session_state.data_manager.raw_data
+                    if raw_data is not None:
+                        # Filter raw data to selected route
+                        route_data = raw_data[
+                            (raw_data['name'].isin(all_facilities)) & 
+                            (raw_data['hub'] == st.session_state.selected_route['to'])
+                        ]
+                        
+                        # Get unique values
+                        if 'parcel_type' in route_data.columns:
+                            all_parcel_types = sorted(route_data['parcel_type'].dropna().unique().tolist())
+                        if 'category' in route_data.columns:
+                            all_categories = sorted(route_data['category'].dropna().unique().tolist())
+                except Exception as e:
+                    print(f"⚠️ Could not extract unique filter values: {e}")
+            
+            # Show filters
+            if all_parcel_types and all_categories:
                 filter_col1, filter_col2, filter_col3 = st.columns(3)
-            else:
+            elif all_parcel_types or all_categories:
                 filter_col1, filter_col2 = st.columns(2)
+                filter_col3 = None
+            else:
+                filter_col1 = st.columns(1)[0]
+                filter_col2 = None
                 filter_col3 = None
             
             with filter_col1:
-                # Always show facility filter for consistency (unified behavior)
-                all_facilities = st.session_state.selected_route['facilities']
+                # Facility filter
                 facility_filter = st.multiselect(
                     "Filter by Facility:", 
                     all_facilities,
@@ -572,17 +595,9 @@ def group_trips_page():
                     key="facility_filter_group"
                 )
             
-            # Only show parcel type filter if column exists
-            if has_parcel_type and filter_col2:
+            # Parcel type filter
+            if all_parcel_types and filter_col2:
                 with filter_col2:
-                    # Parcel Type filter
-                    # Extract unique parcel types from all trips (handling comma-separated values)
-                    all_parcel_types = set()
-                    for pt in available_trips_df['parcel_type'].dropna():
-                        if pt:
-                            all_parcel_types.update([p.strip() for p in str(pt).split(',')])
-                    all_parcel_types = sorted(list(all_parcel_types))
-                    
                     parcel_type_filter = st.multiselect(
                         "Filter by Parcel Type:",
                         all_parcel_types,
@@ -590,19 +605,11 @@ def group_trips_page():
                         key="parcel_type_filter"
                     )
             else:
-                parcel_type_filter = []
+                parcel_type_filter = None
             
-            # Only show category filter if column exists
-            if has_category and filter_col3:
+            # Category filter
+            if all_categories and filter_col3:
                 with filter_col3:
-                    # Category filter
-                    # Extract unique categories from all trips (handling comma-separated values)
-                    all_categories = set()
-                    for cat in available_trips_df['category'].dropna():
-                        if cat:
-                            all_categories.update([c.strip() for c in str(cat).split(',')])
-                    all_categories = sorted(list(all_categories))
-                    
                     category_filter = st.multiselect(
                         "Filter by Category:",
                         all_categories,
@@ -610,45 +617,35 @@ def group_trips_page():
                         key="category_filter"
                     )
             else:
-                category_filter = []
+                category_filter = None
             
-            # Apply filters with AND logic
-            if facility_filter and len(facility_filter) < len(all_facilities):
-                available_trips_df = available_trips_df[available_trips_df['from'].isin(facility_filter)]
-            
-            # Filter by parcel type (only if column exists and filter has values)
-            if has_parcel_type and parcel_type_filter:
-                # Get all unique parcel types to check if filter is subset
-                all_parcel_types_for_check = set()
-                for pt in available_trips_df['parcel_type'].dropna():
-                    if pt:
-                        all_parcel_types_for_check.update([p.strip() for p in str(pt).split(',')])
-                
-                if len(parcel_type_filter) < len(all_parcel_types_for_check):
-                    def has_parcel_type(pt_str):
-                        if pd.isna(pt_str) or not pt_str:
-                            return False
-                        trip_types = [p.strip() for p in str(pt_str).split(',')]
-                        return any(pt in parcel_type_filter for pt in trip_types)
+            # Re-query trips with filters applied (Option B implementation)
+            if has_data_manager and (facility_filter != all_facilities or 
+                                     (parcel_type_filter and len(parcel_type_filter) < len(all_parcel_types)) or
+                                     (category_filter and len(category_filter) < len(all_categories))):
+                # Filters have been changed - re-query with filters
+                with st.spinner("🔍 Applying filters..."):
+                    filtered_trips = st.session_state.data_manager.get_trips_for_multiple_facilities(
+                        facility_filter if facility_filter else all_facilities,
+                        st.session_state.selected_route['to'],
+                        parcel_type_filter=parcel_type_filter if parcel_type_filter else None,
+                        category_filter=category_filter if category_filter else None
+                    )
                     
-                    available_trips_df = available_trips_df[available_trips_df['parcel_type'].apply(has_parcel_type)]
-            
-            # Filter by category (only if column exists and filter has values)
-            if has_category and category_filter:
-                # Get all unique categories to check if filter is subset
-                all_categories_for_check = set()
-                for cat in available_trips_df['category'].dropna():
-                    if cat:
-                        all_categories_for_check.update([c.strip() for c in str(cat).split(',')])
-                
-                if len(category_filter) < len(all_categories_for_check):
-                    def has_category(cat_str):
-                        if pd.isna(cat_str) or not cat_str:
-                            return False
-                        trip_categories = [c.strip() for c in str(cat_str).split(',')]
-                        return any(cat in category_filter for cat in trip_categories)
-                    
-                    available_trips_df = available_trips_df[available_trips_df['category'].apply(has_category)]
+                    # Create new DataFrame with filtered trips
+                    if filtered_trips:
+                        filtered_trips_df = pd.DataFrame(filtered_trips)
+                        # Use composite_trip_id for consistency
+                        trip_id_column = 'composite_trip_id' if 'composite_trip_id' in filtered_trips_df.columns else 'trip_ref_number'
+                        # Filter out already assigned trips
+                        available_trips_df = filtered_trips_df[~filtered_trips_df[trip_id_column].isin(assigned_trip_refs)].copy()
+                    else:
+                        available_trips_df = pd.DataFrame()  # Empty dataframe
+            else:
+                # No filters applied or no data manager - use original data
+                # Just apply facility filter if needed
+                if facility_filter and len(facility_filter) < len(all_facilities):
+                    available_trips_df = available_trips_df[available_trips_df['from'].isin(facility_filter)]
             
             # Show filter summary
             filter_applied = False
@@ -658,23 +655,13 @@ def group_trips_page():
                 filter_applied = True
                 filter_parts.append(f"Facilities: {', '.join(facility_filter)}")
             
-            if has_parcel_type and parcel_type_filter:
-                all_pt = set()
-                for pt in trips_df['parcel_type'].dropna():
-                    if pt:
-                        all_pt.update([p.strip() for p in str(pt).split(',')])
-                if len(parcel_type_filter) < len(all_pt):
-                    filter_applied = True
-                    filter_parts.append(f"Parcel Types: {', '.join(parcel_type_filter)}")
+            if parcel_type_filter and len(parcel_type_filter) < len(all_parcel_types):
+                filter_applied = True
+                filter_parts.append(f"Parcel Types: {', '.join(parcel_type_filter)}")
             
-            if has_category and category_filter:
-                all_cat = set()
-                for cat in trips_df['category'].dropna():
-                    if cat:
-                        all_cat.update([c.strip() for c in str(cat).split(',')])
-                if len(category_filter) < len(all_cat):
-                    filter_applied = True
-                    filter_parts.append(f"Categories: {', '.join(category_filter)}")
+            if category_filter and len(category_filter) < len(all_categories):
+                filter_applied = True
+                filter_parts.append(f"Categories: {', '.join(category_filter)}")
             
             if filter_applied:
                 st.info(f"🔍 Filtered to {len(available_trips_df)} trips | {' | '.join(filter_parts)}")
