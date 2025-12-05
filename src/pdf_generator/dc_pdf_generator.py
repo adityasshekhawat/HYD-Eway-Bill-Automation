@@ -28,14 +28,20 @@ except ImportError:
 # ✅ CITY-AGNOSTIC: Import dynamic configuration from dc_template_generator
 # This replaces hardcoded Bangalore-specific values
 try:
+    # Try relative import first (when imported as module)
     from ..core.dc_template_generator import HUB_CONSTANTS, FACILITY_ADDRESS_MAPPING
     from ..core.dynamic_hub_constants import get_dynamic_hub_constants
-except ImportError:
-    # Fallback for standalone execution
-    import sys
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from core.dc_template_generator import HUB_CONSTANTS, FACILITY_ADDRESS_MAPPING
-    from core.dynamic_hub_constants import get_dynamic_hub_constants
+except (ImportError, ValueError):
+    try:
+        # Try absolute import from src (Streamlit context)
+        from src.core.dc_template_generator import HUB_CONSTANTS, FACILITY_ADDRESS_MAPPING
+        from src.core.dynamic_hub_constants import get_dynamic_hub_constants
+    except ImportError:
+        # Fallback for standalone execution
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from core.dc_template_generator import HUB_CONSTANTS, FACILITY_ADDRESS_MAPPING
+        from core.dynamic_hub_constants import get_dynamic_hub_constants
 
 def get_hub_pincode_from_address(hub_address):
     """Extract pincode from hub address"""
@@ -308,6 +314,10 @@ class DCPDFGenerator:
         facility_state = dc_data.get('facility_state', '')
         facility_name = dc_data.get('facility_name', '')
         
+        print(f"🔍 PDF: Starting GSTIN lookup for {hub_key}")
+        print(f"   facility_state: {facility_state}")
+        print(f"   facility_name: {facility_name}")
+        
         # If facility_state not available, fallback to hub_state
         if not facility_state:
             facility_state = dc_data.get('hub_state', '')
@@ -315,11 +325,16 @@ class DCPDFGenerator:
         
         # Dynamic lookup with actual state for correct GSTIN
         if facility_state:
-            dhc = get_dynamic_hub_constants()
-            hub_details = dhc.get_hub_constants(hub_key, state=facility_state, fc_name=facility_name)
-            print(f"✅ PDF: Using DYNAMIC hub constants for {hub_key} in {facility_state}")
-            print(f"   Facility: {facility_name}")
-            print(f"   GSTIN: {hub_details.get('sender_gstin', 'N/A')}")
+            try:
+                dhc = get_dynamic_hub_constants()
+                hub_details = dhc.get_hub_constants(hub_key, state=facility_state, fc_name=facility_name)
+                print(f"✅ PDF: Using DYNAMIC hub constants for {hub_key} in {facility_state}")
+                print(f"   Facility: {facility_name}")
+                print(f"   GSTIN: {hub_details.get('sender_gstin', 'N/A')}")
+            except Exception as e:
+                print(f"❌ PDF: Error getting dynamic hub constants: {e}")
+                print(f"   Falling back to static HUB_CONSTANTS")
+                hub_details = HUB_CONSTANTS.get(hub_key, {})
         else:
             # Fallback to static if state not available
             hub_details = HUB_CONSTANTS.get(hub_key, {})
