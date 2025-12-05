@@ -84,7 +84,7 @@ class SupabaseSequenceService:
             
             if result.data:
                 sequence_num = result.data
-                print(f"✅ Supabase: Got sequence {prefix}:{sequence_num:08d}")
+                print(f"✅ Supabase: Got sequence {prefix}:{sequence_num:06d}")
                 return True, sequence_num
             else:
                 print(f"❌ Supabase: No sequence returned for {prefix}")

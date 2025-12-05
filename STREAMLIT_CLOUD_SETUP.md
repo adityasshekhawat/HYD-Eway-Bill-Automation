@@ -260,7 +260,7 @@ You'll know it's working when:
 
 1. ✅ Streamlit app loads without errors
 2. ✅ Logs show "Google Sheets initialized successfully"
-3. ✅ DC numbers are generated with hub codes (AKDCHYDNCH00000001)
+3. ✅ DC numbers are generated with hub codes (AKDCHYDNCH000001, max 16 chars)
 4. ✅ Spreadsheet updates in real-time
 5. ✅ Sequences persist across app restarts
 

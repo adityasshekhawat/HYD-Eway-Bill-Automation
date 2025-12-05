@@ -3,10 +3,11 @@
 DC Sequence Manager - Thread-safe sequence management for new DC naming convention
 Handles the new format: {Company}{DC}{Facility}{SequentialNumber}
 - Company: AK (Amolakchand), BD (Bodega), SB (SourcingBee)  
-- Facility: AH (Arihant/Vikrant), SG (Sutlej/Gomati)
-- Sequential: 8-digit number (00000001, 00000002, etc.)
+- Facility: AH (Arihant/Vikrant), SG (Sutlej/Gomati), HYD (Hyderabad)
+- Hub (optional): NCH, BAL, BVG, etc. (for Hyderabad)
+- Sequential: 6-digit number (000001 to 999999) - fits 16 char limit
 
-NOW WITH SUPABASE PERSISTENCE FOR PRODUCTION RELIABILITY
+NOW WITH GOOGLE SHEETS PERSISTENCE FOR PRODUCTION RELIABILITY
 """
 
 import os

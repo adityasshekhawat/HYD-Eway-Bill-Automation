@@ -33,8 +33,8 @@ Automatically tries each option and falls back gracefully.
 **Format:** `{Company}DC{Facility}{Hub}{Sequence}`
 
 **Examples:**
-- `AKDCHYDNCH00000001` - Amolakchand / Hyderabad / Nacharam
-- `BDDCHYDBAL00000001` - Bodega / Hyderabad / Balanagar
+- `AKDCHYDNCH000001` - Amolakchand / Hyderabad / Nacharam (16 chars)
+- `BDDCHYDBAL000001` - Bodega / Hyderabad / Balanagar (16 chars)
 
 **Supported Hubs:**
 - BVG, SGR, BAL, KMP, NCH, SAN
