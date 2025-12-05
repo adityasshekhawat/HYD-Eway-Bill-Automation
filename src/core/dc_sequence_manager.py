@@ -208,16 +208,18 @@ class DCSequenceManager:
             hub_code = self._extract_hub_code(hub_value)
             if hub_code:
                 # Use hub-specific sequence: akdchydnch_seq, bddchybal_seq, etc.
+                # Format: AKDCHYDNCH123456 (16 chars max: 10 prefix + 6 digits)
                 prefix = f"{company_code}DC{facility_code}{hub_code}"
                 sequence_name = f"{prefix.lower()}_seq"
                 next_seq = self.generator.get_next_sequence(sequence_name)
-                return f"{prefix}{next_seq:08d}"
+                return f"{prefix}{next_seq:06d}"  # 6 digits (1 to 999,999)
         
         # Default behavior for non-Telangana or when hub not provided
+        # Format: AKDCAH123456 (up to 14 chars: 6 prefix + 6 digits, leaves 2 spare)
         prefix = f"{company_code}DC{facility_code}"
         sequence_name = f"{prefix.lower()}_seq"
         next_seq = self.generator.get_next_sequence(sequence_name)
-        return f"{prefix}{next_seq:08d}"
+        return f"{prefix}{next_seq:06d}"  # 6 digits for consistency
         
     def reserve_dc_number(self, company_name: str, facility_name: str, hub_value: str = None) -> str:
         """
@@ -257,15 +259,16 @@ class DCSequenceManager:
         # ATOMIC: Increment sequence immediately (no reservation needed)
         try:
             next_seq = self.generator.get_next_sequence(sequence_name)
-            dc_number = f"{prefix}{next_seq:08d}"
+            dc_number = f"{prefix}{next_seq:06d}"  # 6 digits to fit 16-char limit
             print(f"✅ Generated DC number: {dc_number} (sequence incremented immediately)")
+            print(f"   Length: {len(dc_number)} chars (max 16)")
             return dc_number
         except Exception as e:
             print(f"❌ Failed to generate DC number: {e}")
             # Fallback: use current + 1 (risky but better than crashing)
             current_seq = self.get_current_sequence(sequence_name)
             next_seq = current_seq + 1
-            dc_number = f"{prefix}{next_seq:08d}"
+            dc_number = f"{prefix}{next_seq:06d}"
             print(f"⚠️  Using fallback DC number: {dc_number} (NOT saved to database!)")
             return dc_number
     
