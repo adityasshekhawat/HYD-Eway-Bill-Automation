@@ -266,7 +266,7 @@ class EwayBillTemplateGenerator:
         
         # CRITICAL: GSTIN lookup based on FACILITY STATE (supplier), not destination (customer)
         # supplier_state comes from dc_data.get('facility_state') - where FC is located
-        # This ensures correct state-specific GSTIN from final_address.csv
+        # This ensures correct state-specific GSTIN from final_address_updated.csv
         from_gstin = self._get_gstin(hub_type, supplier_state or customer_state)
         to_gstin = self._get_gstin(hub_type, customer_state or supplier_state)
         
@@ -779,7 +779,7 @@ class EwayBillTemplateGenerator:
         """
         Fetch GSTIN for a company/state combination with fallback values
         
-        CRITICAL: GSTIN is based on (company, state) tuple from final_address.csv
+        CRITICAL: GSTIN is based on (company, state) tuple from final_address_updated.csv
         - State should be FACILITY state (where FC is located), not destination hub
         - Example: AMOLAKCHAND in Telangana → 36AAPCA1708D1ZX
         - Example: AMOLAKCHAND in Karnataka → 29AAPCA1708D1ZS

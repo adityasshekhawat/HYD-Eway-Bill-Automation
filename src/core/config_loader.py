@@ -18,7 +18,7 @@ class ConfigurationLoader:
     """
     Loads and manages configuration from CSV files:
     - Org_Names.csv: Organization name lookups
-    - final_address.csv: FC and Hub addresses, GSTINs, states
+    - final_address_updated.csv: FC and Hub addresses, GSTINs, states
     - TaxMasterGstDump: Tax data
     """
     
@@ -60,13 +60,13 @@ class ConfigurationLoader:
             raise
             
     def _load_final_address(self):
-        """Load final_address.csv"""
-        file_path = os.path.join(self.data_dir, "final_address.csv")
+        """Load final_address_updated.csv"""
+        file_path = os.path.join(self.data_dir, "final_address_updated.csv")
         try:
             self.final_address = pd.read_csv(file_path)
-            logger.info(f"✅ Loaded {len(self.final_address)} address records from final_address.csv")
+            logger.info(f"✅ Loaded {len(self.final_address)} address records from final_address_updated.csv")
         except Exception as e:
-            logger.error(f"❌ Failed to load final_address.csv: {e}")
+            logger.error(f"❌ Failed to load final_address_updated.csv: {e}")
             raise
             
     def _load_tax_master(self):

@@ -43,10 +43,10 @@ class HubMetadataService:
     def _load_hub_data(self):
         """Load and parse hub data from CSV - ✅ CITY-AGNOSTIC"""
         try:
-            # ✅ Try final_address.csv first (new format)
+            # ✅ Try final_address_updated.csv first (new format)
             try:
-                hub_df = pd.read_csv('data/final_address.csv')
-                print("✅ Loading hub data from final_address.csv")
+                hub_df = pd.read_csv('data/final_address_updated.csv')
+                print("✅ Loading hub data from final_address_updated.csv")
                 
                 for _, row in hub_df.iterrows():
                     # Use Hub Name as location name
@@ -83,12 +83,12 @@ class HubMetadataService:
                         'state_code': self.state_codes.get(state, '')
                     }
                     
-                print(f"🏢 Loaded metadata for {len(self.hub_data)} hubs from final_address.csv")
+                print(f"🏢 Loaded metadata for {len(self.hub_data)} hubs from final_address_updated.csv")
                 return
                 
             except FileNotFoundError:
                 # Fallback to legacy HubAddresses.csv
-                print("⚠️ final_address.csv not found, trying HubAddresses.csv")
+                print("⚠️ final_address_updated.csv not found, trying HubAddresses.csv")
                 hub_df = pd.read_csv('data/HubAddresses.csv')
                 
                 for _, row in hub_df.iterrows():
