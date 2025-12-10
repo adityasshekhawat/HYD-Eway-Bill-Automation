@@ -187,7 +187,7 @@ class DCSequenceManager:
         }
         
         # Hub codes for Telangana (extracted from HYD_XXX format)
-        self.telangana_hubs = ['BVG', 'SGR', 'BAL', 'KMP', 'NCH', 'SAN']
+        self.telangana_hubs = ['ATP', 'BAL', 'BVG', 'KMP', 'NCH', 'SAN', 'SGR']
         
         # Add a reserved numbers cache for the two-step generation process
         self.reserved_numbers = {}
