@@ -697,8 +697,15 @@ class EwayBillTemplateGenerator:
         hub_state_hint = (dc_data.get('hub_state') or '').strip()
         hub_pincode_hint = self._normalize_pincode(dc_data.get('hub_pincode'))
         
+        print(f"🔍 Parsing customer address for hub: {hub_name}")
+        
         if hub_name:
             metadata = hub_metadata.get_customer_address_components(hub_name)
+            print(f"   Metadata lookup result: {metadata is not None}")
+            if metadata:
+                print(f"   Metadata keys: {list(metadata.keys())}")
+                print(f"   Address1: {metadata.get('address1', 'N/A')[:50]}...")
+                
             if metadata and metadata.get('address1'):
                 address1 = self._truncate_address(metadata.get('address1') or '')
                 address2 = self._truncate_address(metadata.get('address2') or '')
@@ -706,15 +713,19 @@ class EwayBillTemplateGenerator:
                 state = (metadata.get('state') or hub_state_hint).strip()
                 pincode = hub_pincode_hint or self._normalize_pincode(metadata.get('pincode'))
                 state_code = metadata.get('state_code') or self._get_state_code(state)
-            
-            return {
+                
+                print(f"   ✅ Using metadata address for {hub_name}: {city}, {pincode}")
+                
+                return {
                     'address1': address1,
                     'address2': address2,
-                'city': city,
+                    'city': city,
                     'state': state,
                     'pincode': pincode,
                     'state_code': state_code
                 }
+            else:
+                print(f"   ⚠️ Metadata lookup failed for {hub_name}, falling back to hub_address parsing")
         
         hub_address = dc_data.get('hub_address', '')
         parsed = self._parse_address(hub_address)
