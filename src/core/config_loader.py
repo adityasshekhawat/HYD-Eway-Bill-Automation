@@ -51,14 +51,32 @@ class ConfigurationLoader:
         logger.info("✅ Configuration loaded successfully")
         
     def _load_org_names(self):
-        """Load Org_Names.csv"""
-        file_path = os.path.join(self.data_dir, "Org_Names.csv")
+        """Load Org_Names.csv from Streamlit Secrets or local file"""
         try:
-            self.org_names = pd.read_csv(file_path)
-            logger.info(f"✅ Loaded {len(self.org_names)} organizations from Org_Names.csv")
+            # Try loading from Streamlit Secrets first (production)
+            try:
+                import streamlit as st
+                if "org_names_csv" in st.secrets.get("secrets", {}):
+                    csv_data = st.secrets["secrets"]["org_names_csv"]
+                    self.org_names = pd.read_csv(StringIO(csv_data))
+                    logger.info(f"✅ Loaded {len(self.org_names)} organizations from Streamlit Secrets")
+                    return
+            except (ImportError, KeyError, AttributeError):
+                pass  # Fall through to local file
+            
+            # Fallback to local file (development)
+            file_path = os.path.join(self.data_dir, "Org_Names.csv")
+            if os.path.exists(file_path):
+                self.org_names = pd.read_csv(file_path)
+                logger.info(f"✅ Loaded {len(self.org_names)} organizations from local file")
+            else:
+                # Graceful fallback - create empty DataFrame with expected structure
+                logger.warning("⚠️ Org_Names.csv not found - using empty organization names")
+                self.org_names = pd.DataFrame(columns=['org_profile_id', 'org_name'])
         except Exception as e:
-            logger.error(f"❌ Failed to load Org_Names.csv: {e}")
-            raise
+            logger.error(f"❌ Failed to load organization names: {e}")
+            # Create empty DataFrame to prevent crashes
+            self.org_names = pd.DataFrame(columns=['org_profile_id', 'org_name'])
             
     def _load_final_address(self):
         """Load final_address_updated.csv from Streamlit Secrets or local file"""
