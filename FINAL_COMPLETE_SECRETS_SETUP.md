@@ -6,7 +6,7 @@ Your app needs **THREE CSV files** in Streamlit Secrets:
 
 1. ✅ **final_address_updated.csv** (89 rows) - Hub addresses, GST numbers
 2. ✅ **Org_Names.csv** (10,320 rows) - Organization name mappings  
-3. ✅ **TaxMasterNew.csv** (145,449 rows) - Tax and GST data
+3. ✅ **TaxMasterGstDump** (166,136 rows) - Tax and GST data (Updated Dec 3, 2025)
 
 ---
 
@@ -15,7 +15,7 @@ Your app needs **THREE CSV files** in Streamlit Secrets:
 I've prepared all three files for you:
 - ✅ `streamlit_secrets_data.txt` - Hub addresses data
 - ✅ `org_names_for_secrets.txt` - Organization names data
-- ✅ `taxmaster_for_secrets.txt` - Tax/GST data (⚠️ Large file: 25MB)
+- ✅ `taxmaster_for_secrets.txt` - Tax/GST data (⚠️ Large file: 23MB, 166K+ rows)
 
 ---
 
@@ -87,8 +87,8 @@ IS_STREAMLIT_CLOUD = "true"
 |------|------|------|-----------|
 | final_address_csv | 89 | 42 KB | ~5 seconds |
 | org_names_csv | 10,320 | 441 KB | ~10 seconds |
-| taxmaster_csv | 145,449 | 25 MB | ~30 seconds |
-| **TOTAL** | **155,858** | **~26 MB** | **~45 seconds** |
+| taxmaster_csv | 166,136 | 23 MB | ~30 seconds |
+| **TOTAL** | **176,545** | **~24 MB** | **~45 seconds** |
 
 **Note**: Streamlit Cloud free tier has a 1GB secrets limit, so we're well within limits.
 
@@ -101,7 +101,7 @@ After successful configuration, your app logs will show:
 ```
 ✅ Loaded 89 address records from Streamlit Secrets
 ✅ Loaded 10320 organizations from Streamlit Secrets  
-✅ Loaded 145449 tax records from Streamlit Secrets
+✅ Loaded 166136 tax records from Streamlit Secrets
 🏢 Loaded metadata for 89 hubs from Streamlit Secrets
 ```
 
@@ -125,7 +125,7 @@ After deployment, verify:
 ## ⚠️ Important Notes
 
 ### About the Large File (TaxMaster)
-- **Size**: 25MB is large but acceptable for Streamlit Secrets
+- **Size**: 23MB is large but acceptable for Streamlit Secrets
 - **Copy Time**: May take 30-60 seconds to paste
 - **Save Time**: Streamlit may take 10-15 seconds to save
 - **Don't close the browser** while it's saving!
@@ -152,7 +152,7 @@ Alternative: Paste in this order (smallest to largest):
 - **Fix**: Remove any extra quotes or special characters
 
 ### "Secrets too large"
-- **Unlikely**: We're using ~26MB of 1GB limit (2.6%)
+- **Unlikely**: We're using ~24MB of 1GB limit (2.4%)
 - **If it happens**: Contact me for compression solution
 
 ### App shows warnings about missing data
