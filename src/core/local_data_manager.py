@@ -258,28 +258,45 @@ class DataManager:
         return result_df
 
 def load_taxmaster_data():
-    """Load TaxMaster data with automatic format detection and migration"""
+    """Load TaxMaster data from Streamlit Secrets or local files"""
+    from io import StringIO
+    
     try:
+        # Try loading from Streamlit Secrets first (production)
+        try:
+            import streamlit as st
+            if "taxmaster_csv" in st.secrets.get("secrets", {}):
+                csv_data = st.secrets["secrets"]["taxmaster_csv"]
+                tax_df = pd.read_csv(StringIO(csv_data), dtype={'Jpin': str})
+                print(f"✅ Loaded {len(tax_df)} tax records from Streamlit Secrets")
+                return tax_df
+        except (ImportError, KeyError, AttributeError):
+            pass  # Fall through to local files
+        
+        # Fallback to local files (development)
         # Try new format first
         if os.path.exists(NEW_TAXMASTER_FILE):
-            print("🔄 Loading new TaxMaster format...")
+            print("🔄 Loading new TaxMaster format from local file...")
             return load_and_validate_taxmaster(NEW_TAXMASTER_FILE)
         else:
-            # Fallback to old format
+            # Try old format
             old_file = os.path.join(DATA_DIR, 'TaxMaster.csv')
             if os.path.exists(old_file):
-                print("⚠️  Loading old TaxMaster format...")
+                print("⚠️  Loading old TaxMaster format from local file...")
                 tax_df = pd.read_csv(old_file, dtype={'jpin': str})
                 # Convert to new format
                 tax_df = tax_df.rename(columns=TAXMASTER_COLUMN_MAPPING)
                 print(f"✅ Converted {len(tax_df)} tax records to new format")
                 return tax_df
             else:
-                raise FileNotFoundError("Neither new nor old TaxMaster file found")
+                print("⚠️ No TaxMaster file found - returning empty DataFrame")
+                # Return empty DataFrame with expected structure
+                return pd.DataFrame(columns=['Jpin', 'hsnCode', 'gstPercentage', 'cess'])
                 
     except Exception as e:
         print(f"❌ Error loading TaxMaster data: {str(e)}")
-        return None
+        # Return empty DataFrame to prevent crashes
+        return pd.DataFrame(columns=['Jpin', 'hsnCode', 'gstPercentage', 'cess'])
 
 def read_master_data(filename):
     """Read master data from CSV file"""
