@@ -8,6 +8,7 @@ import pandas as pd
 import os
 from typing import Dict, Optional, Tuple, List
 import logging
+from io import StringIO
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -60,13 +61,25 @@ class ConfigurationLoader:
             raise
             
     def _load_final_address(self):
-        """Load final_address_updated.csv"""
-        file_path = os.path.join(self.data_dir, "final_address_updated.csv")
+        """Load final_address_updated.csv from Streamlit Secrets or local file"""
         try:
+            # Try loading from Streamlit Secrets first (production)
+            try:
+                import streamlit as st
+                if "final_address_csv" in st.secrets.get("secrets", {}):
+                    csv_data = st.secrets["secrets"]["final_address_csv"]
+                    self.final_address = pd.read_csv(StringIO(csv_data))
+                    logger.info(f"✅ Loaded {len(self.final_address)} address records from Streamlit Secrets")
+                    return
+            except (ImportError, KeyError, AttributeError):
+                pass  # Fall through to local file
+            
+            # Fallback to local file (development)
+            file_path = os.path.join(self.data_dir, "final_address_updated.csv")
             self.final_address = pd.read_csv(file_path)
-            logger.info(f"✅ Loaded {len(self.final_address)} address records from final_address_updated.csv")
+            logger.info(f"✅ Loaded {len(self.final_address)} address records from final_address_updated.csv (local)")
         except Exception as e:
-            logger.error(f"❌ Failed to load final_address_updated.csv: {e}")
+            logger.error(f"❌ Failed to load final_address data: {e}")
             raise
             
     def _load_tax_master(self):

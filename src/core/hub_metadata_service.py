@@ -8,6 +8,7 @@ import pandas as pd
 import re
 import os
 from typing import Dict, Optional, Tuple
+from io import StringIO
 
 class HubMetadataService:
     """Centralized service for hub metadata management"""
@@ -45,8 +46,19 @@ class HubMetadataService:
         try:
             # ✅ Try final_address_updated.csv first (new format)
             try:
-                hub_df = pd.read_csv('data/final_address_updated.csv')
-                print("✅ Loading hub data from final_address_updated.csv")
+                # Try loading from Streamlit Secrets first (production)
+                try:
+                    import streamlit as st
+                    if "final_address_csv" in st.secrets.get("secrets", {}):
+                        csv_data = st.secrets["secrets"]["final_address_csv"]
+                        hub_df = pd.read_csv(StringIO(csv_data))
+                        print("✅ Loading hub data from Streamlit Secrets")
+                    else:
+                        raise KeyError("Secrets not configured")
+                except (ImportError, KeyError, AttributeError):
+                    # Fallback to local file (development)
+                    hub_df = pd.read_csv('data/final_address_updated.csv')
+                    print("✅ Loading hub data from final_address_updated.csv (local)")
                 
                 for _, row in hub_df.iterrows():
                     # Use Hub Name as location name
