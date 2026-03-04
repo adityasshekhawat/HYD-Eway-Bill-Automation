@@ -12,7 +12,7 @@
     "bddchydbal_seq": 3626,
     "bddchydsan_seq": 3158,
     "akdchydsan_seq": 1779,
-    "bddchydnch_seq": 5370,
+    "bddchydnch_seq": 5371,
     "bddchydbvg_seq": 805,
     "bddchydsgr_seq": 579,
     "akdchydsgr_seq": 514,
@@ -21,7 +21,7 @@
     "sbdchydatp_seq": 301,
     "akdcxx_seq": 305
   },
-  "last_updated": "2026-03-04T15:30:15.973422",
+  "last_updated": "2026-03-04T16:50:15.078521",
   "version": "1.0",
   "bddchydbal_seq_history": [
     {
@@ -193,10 +193,6 @@
   ],
   "bddchydnch_seq_history": [
     {
-      "value": 5361,
-      "timestamp": "2026-03-03T17:00:35.486993"
-    },
-    {
       "value": 5362,
       "timestamp": "2026-03-04T15:06:10.591219"
     },
@@ -231,6 +227,10 @@
     {
       "value": 5370,
       "timestamp": "2026-03-04T15:06:23.781936"
+    },
+    {
+      "value": 5371,
+      "timestamp": "2026-03-04T16:50:15.078534"
     }
   ],
   "akdchydnch_seq_history": [
