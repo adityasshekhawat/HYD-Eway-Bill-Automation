@@ -171,7 +171,9 @@ class GitHubSequenceGenerator:
                         'bddcah_seq': 300,
                         'bddcsg_seq': 300,
                         'sbdcah_seq': 300,
-                        'sbdcsg_seq': 300
+                        'sbdcsg_seq': 300,
+                        'bddcpuntlw_seq': 0,
+                        'bddcpunpsl_seq': 0
                     },
                     'last_updated': datetime.now().isoformat(),
                     'version': '1.0'
@@ -315,4 +317,9 @@ class GitHubSequenceGenerator:
         except Exception as e:
             print(f"❌ Error setting sequence: {e}")
             return False
+
+
+
+
+
 

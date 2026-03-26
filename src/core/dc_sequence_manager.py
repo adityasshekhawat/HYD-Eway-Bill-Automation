@@ -3,8 +3,8 @@
 DC Sequence Manager - Thread-safe sequence management for new DC naming convention
 Handles the new format: {Company}{DC}{Facility}{SequentialNumber}
 - Company: AK (Amolakchand), BD (Bodega), SB (SourcingBee)  
-- Facility: AH (Arihant/Vikrant), SG (Sutlej/Gomati), HYD (Hyderabad)
-- Hub (optional): NCH, BAL, BVG, etc. (for Hyderabad)
+- Facility: AH (Arihant/Vikrant), SG (Sutlej/Gomati), HYD (Hyderabad), PUN (Pune)
+- Hub (optional): NCH, BAL, BVG, etc. (for Hyderabad); TLW, PSL (for Pune)
 - Sequential: 6-digit number (000001 to 999999) - fits 16 char limit
 
 PERSISTENCE BACKENDS (priority order):
@@ -179,15 +179,19 @@ class DCSequenceManager:
             
         self.company_codes = {'AMOLAKCHAND': 'AK', 'BODEGA': 'BD', 'SOURCINGBEE': 'SB'}
         self.facility_codes = {
-            'Sutlej/Gomati': 'SG', 
-            'Arihant': 'AH', 
+            'Sutlej/Gomati': 'SG',
+            'Arihant': 'AH',
             'Vikrant': 'AH',
             'FC-Hyderabad': 'HYD',  # Telangana facility
-            'Hyderabad': 'HYD'
+            'Hyderabad': 'HYD',
+            'FC-Pune': 'PUN',       # Maharashtra facility
+            'Pune': 'PUN'
         }
-        
+
         # Hub codes for Telangana (extracted from HYD_XXX format)
         self.telangana_hubs = ['ATP', 'BAL', 'BVG', 'KMP', 'NCH', 'SAN', 'SGR']
+        # Hub codes for Maharashtra/Pune (extracted from PUN_XXX format)
+        self.pune_hubs = ['TLW', 'PSL']
         
         # Add a reserved numbers cache for the two-step generation process
         self.reserved_numbers = {}
@@ -227,18 +231,18 @@ class DCSequenceManager:
         company_code = self.company_codes.get(company_name.upper(), 'XX')
         facility_code = self.facility_codes.get(facility_name, 'XX')
         
-        # Check if this is Telangana (Hyderabad) and hub tracking is needed
-        if facility_code == 'HYD' and hub_value:
+        # Check if this is a hub-tracked city (Hyderabad or Pune) and hub value is provided
+        if facility_code in ('HYD', 'PUN') and hub_value:
             hub_code = self._extract_hub_code(hub_value)
             if hub_code:
-                # Use hub-specific sequence: akdchydnch_seq, bddchybal_seq, etc.
-                # Format: AKDCHYDNCH123456 (16 chars max: 10 prefix + 6 digits)
+                # Use hub-specific sequence: akdchydnch_seq, bddcpuntlw_seq, etc.
+                # Format: AKDCHYDNCH123456 / BDDCPUNTLW000001 (16 chars max: 10 prefix + 6 digits)
                 prefix = f"{company_code}DC{facility_code}{hub_code}"
                 sequence_name = f"{prefix.lower()}_seq"
                 next_seq = self.generator.get_next_sequence(sequence_name)
                 return f"{prefix}{next_seq:06d}"  # 6 digits (1 to 999,999)
-        
-        # Default behavior for non-Telangana or when hub not provided
+
+        # Default behavior for non-hub-tracked cities or when hub not provided
         # Format: AKDCAH123456 (up to 14 chars: 6 prefix + 6 digits, leaves 2 spare)
         prefix = f"{company_code}DC{facility_code}"
         sequence_name = f"{prefix.lower()}_seq"
@@ -267,8 +271,8 @@ class DCSequenceManager:
         company_code = self.company_codes.get(company_name.upper(), 'XX')
         facility_code = self.facility_codes.get(facility_name, 'XX')
         
-        # Check if this is Telangana (Hyderabad) and hub tracking is needed
-        if facility_code == 'HYD' and hub_value:
+        # Check if this is a hub-tracked city (Hyderabad or Pune) and hub value is provided
+        if facility_code in ('HYD', 'PUN') and hub_value:
             hub_code = self._extract_hub_code(hub_value)
             if hub_code:
                 prefix = f"{company_code}DC{facility_code}{hub_code}"
