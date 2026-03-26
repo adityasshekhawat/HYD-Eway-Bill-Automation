@@ -22,9 +22,9 @@
     "akdcxx_seq": 305,
     "bddcxx_seq": 318,
     "bddcpuntlw_seq": 32,
-    "bddcpunpsl_seq": 27
+    "bddcpunpsl_seq": 28
   },
-  "last_updated": "2026-03-26T15:43:53.832304",
+  "last_updated": "2026-03-26T15:43:55.578988",
   "version": "1.0",
   "bddchydbal_seq_history": [
     {
@@ -644,10 +644,6 @@
   ],
   "bddcpunpsl_seq_history": [
     {
-      "value": 18,
-      "timestamp": "2026-03-26T15:43:37.070471"
-    },
-    {
       "value": 19,
       "timestamp": "2026-03-26T15:43:38.987766"
     },
@@ -682,6 +678,10 @@
     {
       "value": 27,
       "timestamp": "2026-03-26T15:43:53.832325"
+    },
+    {
+      "value": 28,
+      "timestamp": "2026-03-26T15:43:55.579010"
     }
   ]
 }
