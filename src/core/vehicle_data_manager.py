@@ -910,8 +910,12 @@ class VehicleDataManager:
                     'Cess': cess_rate
                 }
                 
+                if quantity == 0:
+                    print(f"   ⚠️ Skipping product '{product_name}' - quantity is 0 (taxable value: {taxable_value})")
+                    continue
+
                 products.append(product)
-            
+
             print(f"   Products processed: {len(products)}")
             
             # CRITICAL FIX: Get actual company name from HUB_CONSTANTS based on hub_type
