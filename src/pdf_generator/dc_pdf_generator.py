@@ -63,11 +63,11 @@ class DCPDFGenerator:
         self.page_width = self.page_size[0]
         self.page_height = self.page_size[1]
         
-        # Margins - matching Excel print margins
-        self.margin_left = 20
-        self.margin_right = 20
-        self.margin_top = 25
-        self.margin_bottom = 25
+        # Margins - compact for fewer pages
+        self.margin_left = 12
+        self.margin_right = 12
+        self.margin_top = 12
+        self.margin_bottom = 12
         
         # Available content area
         self.content_width = self.page_width - self.margin_left - self.margin_right
@@ -127,6 +127,26 @@ class DCPDFGenerator:
             textColor=colors.black,
             leading=8
         ))
+
+        # Compact style for product table rows
+        self.styles.add(ParagraphStyle(
+            name='DCProductRow',
+            parent=self.styles['Normal'],
+            fontSize=6.5,
+            fontName='Helvetica',
+            textColor=colors.black,
+            leading=8
+        ))
+
+        # Compact bold style for product table header/totals
+        self.styles.add(ParagraphStyle(
+            name='DCProductHeader',
+            parent=self.styles['Normal'],
+            fontSize=7,
+            fontName='Helvetica-Bold',
+            textColor=colors.black,
+            leading=8.5
+        ))
     
     def create_dc_pdf(self, dc_data, output_path):
         """
@@ -151,7 +171,7 @@ class DCPDFGenerator:
             story.extend(self._create_title_row(dc_data))
             
             # Row 2: Empty spacer row
-            story.append(Spacer(1, 8))
+            story.append(Spacer(1, 3))
             
             # Rows 3-6: Header information (exactly matching Excel layout)
             story.extend(self._create_header_rows(dc_data))
@@ -275,27 +295,27 @@ class DCPDFGenerator:
             ]
         ]
         
-        # Column widths matching Excel columns A-I - FIXED: Same improved distribution as header
+        # Column widths - D widened so "Transport Mode:" / "Vehicle number:" fit on one line
         col_widths = [
-            self.content_width * 0.12,  # A - Label column
-            self.content_width * 0.08,  # B - Data column (reduced for better space distribution)
-            self.content_width * 0.12,  # C - Data/Label column
-            self.content_width * 0.08,  # D - Label column
-            self.content_width * 0.10,  # E - Label column (reduced)
-            self.content_width * 0.12,  # F - Data column (reduced)
-            self.content_width * 0.12,  # G - Label column (reduced)
-            self.content_width * 0.08,  # H - Data column (reduced)
-            self.content_width * 0.18   # I - Extra space (consistent with header)
+            self.content_width * 0.12,  # A - Label
+            self.content_width * 0.08,  # B
+            self.content_width * 0.12,  # C - Value
+            self.content_width * 0.12,  # D - Label (wider to prevent wrapping)
+            self.content_width * 0.07,  # E
+            self.content_width * 0.09,  # F
+            self.content_width * 0.09,  # G
+            self.content_width * 0.08,  # H
+            self.content_width * 0.23   # I - Value (right side)
         ]
-        
-        header_table = Table(header_data, colWidths=col_widths)
+
+        header_table = Table(header_data, colWidths=col_widths,
+                             rowHeights=[14] * len(header_data))
         header_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            # Remove borders for clean look
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('WORDWRAP', (0, 0), (-1, -1), True),  # Enable text wrapping
-            ('FONTSIZE', (8, 0), (8, -1), 8),      # Ensure column I has readable font size
+            ('ALIGN',        (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN',       (0, 0), (-1, -1), 'MIDDLE'),
+            ('FONTSIZE',     (0, 0), (-1, -1), 8),
+            ('TOPPADDING',   (0, 0), (-1, -1), 1),
+            ('BOTTOMPADDING',(0, 0), (-1, -1), 1),
         ]))
         
         story.append(header_table)
@@ -443,15 +463,16 @@ class DCPDFGenerator:
             self.content_width * 0.05   # I - Data column
         ]
         
-        party_table = Table(party_data, colWidths=col_widths)
-        
+        party_table = Table(party_data, colWidths=col_widths,
+                            rowHeights=[14] * len(party_data))
+
         # Style matching Excel formatting
         party_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            # Remove borders for clean look
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('WORDWRAP', (0, 0), (-1, -1), True),  # Enable text wrapping for better formatting
+            ('ALIGN',        (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN',       (0, 0), (-1, -1), 'MIDDLE'),
+            ('FONTSIZE',     (0, 0), (-1, -1), 8),
+            ('TOPPADDING',   (0, 0), (-1, -1), 1),
+            ('BOTTOMPADDING',(0, 0), (-1, -1), 1),
             # Row 7 header background
             ('BACKGROUND', (0, 0), (3, 0), colors.lightgrey),  # A7:D7
             ('BACKGROUND', (4, 0), (8, 0), colors.lightgrey),  # E7:I7
@@ -485,7 +506,7 @@ class DCPDFGenerator:
         # Create header row
         header_row = []
         for header in headers:
-            header_row.append(Paragraph(f"<b>{header}</b>", self.styles['DCHeader']))
+            header_row.append(Paragraph(f"<b>{header}</b>", self.styles['DCProductHeader']))
         
         # Product data rows (starting from Row 14)
         product_data = [header_row]
@@ -528,32 +549,31 @@ class DCPDFGenerator:
             total_sgst += sgst_amount
             total_cess += cess_amount
             
-            # Create product row (matching Excel cell formatting)
+            # Create product row (compact style)
             product_row = [
-                Paragraph(str(idx), self.styles['DCData']),
-                Paragraph(str(product.get('Description', '')), self.styles['DCData']),
-                Paragraph(str(product.get('HSN', '')), self.styles['DCData']),
-                Paragraph(f"{float(quantity):,.0f}", self.styles['DCData']),
-                Paragraph(f"{float(value):,.2f}", self.styles['DCData']),  # Numbers only
-                Paragraph(f"{float(gst_rate):.1f}%", self.styles['DCData']),
-                Paragraph(f"{float(cgst_amount):,.2f}", self.styles['DCData']),  # Numbers only
-                Paragraph(f"{float(sgst_amount):,.2f}", self.styles['DCData']),  # Numbers only
-                Paragraph(f"{float(cess_amount):,.2f}", self.styles['DCData'])   # Numbers only
+                Paragraph(str(idx),                              self.styles['DCProductRow']),
+                Paragraph(str(product.get('Description', '')),  self.styles['DCProductRow']),
+                Paragraph(str(product.get('HSN', '')),           self.styles['DCProductRow']),
+                Paragraph(f"{float(quantity):,.0f}",             self.styles['DCProductRow']),
+                Paragraph(f"{float(value):,.2f}",                self.styles['DCProductRow']),
+                Paragraph(f"{float(gst_rate):.1f}%",            self.styles['DCProductRow']),
+                Paragraph(f"{float(cgst_amount):,.2f}",          self.styles['DCProductRow']),
+                Paragraph(f"{float(sgst_amount):,.2f}",          self.styles['DCProductRow']),
+                Paragraph(f"{float(cess_amount):,.2f}",          self.styles['DCProductRow']),
             ]
             
             product_data.append(product_row)
         
         # Add totals row (matching Excel totals row)
         totals_row = [
-            Paragraph("<b>Total</b>", self.styles['DCHeader']),
+            Paragraph("<b>Total</b>",                                self.styles['DCProductHeader']),
+            "", "",
+            Paragraph(f"<b>{float(total_qty):,.0f}</b>",            self.styles['DCProductHeader']),
+            Paragraph(f"<b>{float(total_taxable_value):,.2f}</b>",  self.styles['DCProductHeader']),
             "",
-            "",
-            Paragraph(f"<b>{float(total_qty):,.0f}</b>", self.styles['DCHeader']),
-            Paragraph(f"<b>{float(total_taxable_value):,.2f}</b>", self.styles['DCHeader']),  # Numbers only
-            "",
-            Paragraph(f"<b>{float(total_cgst):,.2f}</b>", self.styles['DCHeader']),  # Numbers only
-            Paragraph(f"<b>{float(total_sgst):,.2f}</b>", self.styles['DCHeader']),  # Numbers only
-            Paragraph(f"<b>{float(total_cess):,.2f}</b>", self.styles['DCHeader'])   # Numbers only
+            Paragraph(f"<b>{float(total_cgst):,.2f}</b>",           self.styles['DCProductHeader']),
+            Paragraph(f"<b>{float(total_sgst):,.2f}</b>",           self.styles['DCProductHeader']),
+            Paragraph(f"<b>{float(total_cess):,.2f}</b>",           self.styles['DCProductHeader']),
         ]
         product_data.append(totals_row)
         
@@ -570,23 +590,26 @@ class DCPDFGenerator:
             self.content_width * 0.08   # I: CESS
         ]
         
-        product_table = Table(product_data, colWidths=col_widths)
-        
+        n_data_rows = len(product_data) - 2  # exclude header + totals row
+        row_heights = [None] + [13] * n_data_rows + [None]
+
+        product_table = Table(product_data, colWidths=col_widths, rowHeights=row_heights)
+
         # Style matching Excel formatting exactly
         table_style = [
-            # Alignment matching Excel
-            ('ALIGN', (0, 0), (0, -1), 'RIGHT'),   # S.No right (matching Excel)
-            ('ALIGN', (1, 0), (1, -1), 'LEFT'),    # Description left
-            ('ALIGN', (2, 0), (2, -1), 'LEFT'),    # HSN left (matching Excel)
-            ('ALIGN', (3, 0), (-1, -1), 'RIGHT'),  # All numeric columns right
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('BOX', (0, 0), (-1, -1), 1, colors.black),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),  # Header background
-            ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),  # Totals background
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            # Totals row special formatting
-            ('SPAN', (0, -1), (2, -1)),  # Merge A:C for "Total" label (matching Excel)
+            ('ALIGN',        (0, 0), (0, -1), 'RIGHT'),
+            ('ALIGN',        (1, 0), (1, -1), 'LEFT'),
+            ('ALIGN',        (2, 0), (2, -1), 'LEFT'),
+            ('ALIGN',        (3, 0), (-1, -1), 'RIGHT'),
+            ('VALIGN',       (0, 0), (-1, -1), 'MIDDLE'),
+            ('BOX',          (0, 0), (-1, -1), 0.5, colors.black),
+            ('GRID',         (0, 0), (-1, -1), 0.5, colors.black),
+            ('BACKGROUND',   (0, 0), (-1, 0),  colors.lightgrey),
+            ('BACKGROUND',   (0, -1),(-1, -1), colors.lightgrey),
+            ('FONTSIZE',     (0, 0), (-1, -1), 6.5),
+            ('TOPPADDING',   (0, 0), (-1, -1), 1),
+            ('BOTTOMPADDING',(0, 0), (-1, -1), 1),
+            ('SPAN',         (0, -1),(2, -1)),
         ]
         
         product_table.setStyle(TableStyle(table_style))
