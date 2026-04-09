@@ -872,51 +872,53 @@ class VehicleDataManager:
             print(f"   Place of Supply: {hub_place_of_supply}")
             print(f"   Hub Address: {hub_address[:50]}...")
             
-            # Process products
-            products = []
+            # Process products — consolidate duplicate JPINs into single line items
+            # (same JPIN can appear multiple times across trip refs for the same vehicle+sender)
+            consolidated = {}  # key: jpin → aggregated product dict
             for _, row in group_data.iterrows():
-                # Use correct column names from the raw data
+                jpin = str(row.get('jpin', '')).strip()
                 product_name = row.get('title', row.get('product_name', 'Unknown Product'))
                 taxable_value = row.get('taxable_amount', row.get('value', 0))
-                
-                # Handle taxable_amount as string with commas
+
                 if isinstance(taxable_value, str):
                     taxable_value = taxable_value.replace(',', '')
-                
                 try:
                     taxable_value = float(taxable_value)
                 except (ValueError, TypeError):
                     taxable_value = 0.0
-                
+
                 quantity = row.get('planned_quantity', row.get('quantity', 0))
-                
                 try:
                     quantity = float(quantity)
                 except (ValueError, TypeError):
                     quantity = 0.0
-                
-                # Get HSN and GST rate from tax data
-                hsn_code = row.get('hsn_code', row.get('hsn', 'N/A'))  # Fixed: use hsn_code from enriched data
-                gst_rate = row.get('gst_rate', 0)
-                cess_rate = row.get('cess', 0)  # Fixed: use 'cess' from enriched data
-                
-                # Create product with correct field names expected by DC generator
-                product = {
-                    'Description': product_name,
-                    'HSN': hsn_code,
-                    'Quantity': quantity,
-                    'Value': taxable_value,
-                    'GST Rate': gst_rate,
-                    'Cess': cess_rate
-                }
-                
-                if quantity == 0:
-                    print(f"   ⚠️ Skipping product '{product_name}' - quantity is 0 (taxable value: {taxable_value})")
-                    continue
 
+                hsn_code = row.get('hsn_code', row.get('hsn', 'N/A'))
+                gst_rate = row.get('gst_rate', 0)
+                cess_rate = row.get('cess', 0)
+
+                if jpin in consolidated:
+                    consolidated[jpin]['Quantity'] += quantity
+                    consolidated[jpin]['Value'] += taxable_value
+                else:
+                    consolidated[jpin] = {
+                        'Description': product_name,
+                        'HSN': hsn_code,
+                        'Quantity': quantity,
+                        'Value': taxable_value,
+                        'GST Rate': gst_rate,
+                        'Cess': cess_rate
+                    }
+
+            # Skip products where consolidated quantity is 0
+            products = []
+            for jpin, product in consolidated.items():
+                if product['Quantity'] == 0:
+                    print(f"   ⚠️ Skipping product '{product['Description']}' - quantity is 0 after consolidation")
+                    continue
                 products.append(product)
 
-            print(f"   Products processed: {len(products)}")
+            print(f"   Products processed: {len(group_data)} rows → {len(products)} unique JPINs after consolidation")
             
             # CRITICAL FIX: Get actual company name from HUB_CONSTANTS based on hub_type
             hub_constants = HUB_CONSTANTS.get(hub_type, {})
