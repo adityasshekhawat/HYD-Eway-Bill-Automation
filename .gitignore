@@ -38,8 +38,14 @@ credentials_template.json
 # Sensitive data files - DO NOT COMMIT
 data/final_address.csv
 data/final_address_updated.csv
+data/final_address_template.csv
 data/HubAddresses.csv
 data/Org_Names.csv
 data/TaxMaster*.csv
 data/*_consolidated.csv
 data/realtime_dc__data*.csv
+data/*.pdf
+data/*Dummy*.csv
+data/guide-ewaybill.csv
+taxmaster_for_secrets.txt
+EWAY_AMOLAKCHAND_Consolidated.xlsx
