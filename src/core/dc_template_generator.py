@@ -350,7 +350,9 @@ def populate_dc_data(ws, dc_data):
         print(f"   GSTIN: {hub_details.get('sender_gstin', 'N/A')}")
     else:
         # Fallback to static if state not available
-        hub_details = HUB_CONSTANTS.get(hub_key, {})
+        from .dynamic_hub_constants import get_dynamic_hub_constants
+        dhc = get_dynamic_hub_constants()
+        hub_details = HUB_CONSTANTS.get(hub_key) or dhc._get_fallback_constants(hub_key)
         print(f"⚠️  Using STATIC hub constants for {hub_key} (state not available)")
 
     # ✅ CITY-AGNOSTIC: Use dynamic hub data if available, no hardcoded fallbacks
@@ -477,7 +479,7 @@ def populate_dc_data(ws, dc_data):
 
     # Row 84 equivalent
     ws[f'A{footer_start_row+2}'] = "Reasons for transportation other than by way of supply: Intrastate Stock transfer between units of same entity"
-    ws[f'E{footer_start_row+2}'] = hub_details['company_name']
+    ws[f'E{footer_start_row+2}'] = hub_details.get('company_name', '')
     
     # Row 86 equivalent
     ws[f'A{footer_start_row+4}'] = "Terms & Conditions"
