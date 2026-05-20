@@ -198,7 +198,21 @@ class VehicleDataManager:
     
     def get_hub_state_info(self, hub_name):
         """Get state and state code for a hub using metadata service"""
-        return self.hub_metadata.get_state_info(hub_name)
+        state, code = self.hub_metadata.get_state_info(hub_name)
+        if not state:
+            _prefix_state_map = {
+                'CHE': ('Tamil Nadu', '33'),
+                'HYD': ('Telangana', '36'),
+                'PUN': ('Maharashtra', '27'),
+                'BLR': ('Karnataka', '29'),
+                'MYS': ('Karnataka', '29'),
+                'LKO': ('Uttar Pradesh', '09'),
+                'BH':  ('Bihar', '10'),
+                'JH':  ('Jharkhand', '20'),
+            }
+            prefix = hub_name.split('_')[0].upper() if hub_name else ''
+            state, code = _prefix_state_map.get(prefix, ('', ''))
+        return state, code
     
     def get_hub_place_of_supply(self, hub_name):
         """Get place of supply for a hub using metadata service"""
@@ -921,9 +935,11 @@ class VehicleDataManager:
             print(f"   Products processed: {len(group_data)} rows → {len(products)} unique JPINs after consolidation")
             
             # CRITICAL FIX: Get actual company name from HUB_CONSTANTS based on hub_type
-            hub_constants = HUB_CONSTANTS.get(hub_type, {})
+            from .dynamic_hub_constants import get_dynamic_hub_constants as _get_dhc
+            _dhc = _get_dhc()
+            hub_constants = HUB_CONSTANTS.get(hub_type) or _dhc._get_fallback_constants(hub_type)
             company_name = hub_constants.get('company_name', hub_type)  # Fallback to hub_type if no company_name
-            
+
             print(f"🏢 Using company name for DC: {company_name} (hub_type: {hub_type})")
             
             # Create DC data with enhanced metadata
@@ -1010,9 +1026,11 @@ class VehicleDataManager:
         dc_list = []
         
         # CRITICAL FIX: Get actual company name from HUB_CONSTANTS based on hub_type
-        hub_constants = HUB_CONSTANTS.get(hub_type, {})
+        from .dynamic_hub_constants import get_dynamic_hub_constants as _get_dhc
+        _dhc = _get_dhc()
+        hub_constants = HUB_CONSTANTS.get(hub_type) or _dhc._get_fallback_constants(hub_type)
         company_name = hub_constants.get('company_name', hub_type)  # Fallback to hub_type if no company_name
-        
+
         print(f"🏢 Split DC using company name: {company_name} (hub_type: {hub_type})")
         
         # Ensure facility_address is a dictionary with required keys
