@@ -185,13 +185,17 @@ class DCSequenceManager:
             'FC-Hyderabad': 'HYD',  # Telangana facility
             'Hyderabad': 'HYD',
             'FC-Pune': 'PUN',       # Maharashtra facility
-            'Pune': 'PUN'
+            'Pune': 'PUN',
+            'FC-Chennai': 'CHE',    # Tamil Nadu facility
+            'Chennai': 'CHE'
         }
 
         # Hub codes for Telangana (extracted from HYD_XXX format)
         self.telangana_hubs = ['ATP', 'BAL', 'BVG', 'KMP', 'NCH', 'SAN', 'SGR']
         # Hub codes for Maharashtra/Pune (extracted from PUN_XXX format)
         self.pune_hubs = ['TLW', 'PSL']
+        # Hub codes for Tamil Nadu/Chennai (extracted from CHE_XXX format)
+        self.chennai_hubs = ['POR']
         
         # Add a reserved numbers cache for the two-step generation process
         self.reserved_numbers = {}
@@ -231,8 +235,8 @@ class DCSequenceManager:
         company_code = self.company_codes.get(company_name.upper(), 'XX')
         facility_code = self.facility_codes.get(facility_name, 'XX')
         
-        # Check if this is a hub-tracked city (Hyderabad or Pune) and hub value is provided
-        if facility_code in ('HYD', 'PUN') and hub_value:
+        # Check if this is a hub-tracked city (Hyderabad, Pune, or Chennai) and hub value is provided
+        if facility_code in ('HYD', 'PUN', 'CHE') and hub_value:
             hub_code = self._extract_hub_code(hub_value)
             if hub_code:
                 # Use hub-specific sequence: akdchydnch_seq, bddcpuntlw_seq, etc.
@@ -271,8 +275,8 @@ class DCSequenceManager:
         company_code = self.company_codes.get(company_name.upper(), 'XX')
         facility_code = self.facility_codes.get(facility_name, 'XX')
         
-        # Check if this is a hub-tracked city (Hyderabad or Pune) and hub value is provided
-        if facility_code in ('HYD', 'PUN') and hub_value:
+        # Check if this is a hub-tracked city (Hyderabad, Pune, or Chennai) and hub value is provided
+        if facility_code in ('HYD', 'PUN', 'CHE') and hub_value:
             hub_code = self._extract_hub_code(hub_value)
             if hub_code:
                 prefix = f"{company_code}DC{facility_code}{hub_code}"
