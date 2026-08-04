@@ -206,8 +206,8 @@ def load_data_page():
                 try:
                     # Check file size (Streamlit default limit is 200MB)
                     file_size = len(uploaded_file.getvalue()) / (1024 * 1024)  # MB
-                    if file_size > 50:  # 50MB limit
-                        st.error(f"❌ {file_info['name']} is too large ({file_size:.1f}MB). Please use a file smaller than 50MB.")
+                    if file_size > 100:  # 100MB limit
+                        st.error(f"❌ {file_info['name']} is too large ({file_size:.1f}MB). Please use a file smaller than 100MB.")
                         continue
                     
                     # Try to read the file to validate it's a proper CSV
@@ -340,7 +340,7 @@ def load_data_page():
         with st.expander("❌ Upload Issues", expanded=False):
             st.markdown("""
             **If uploads fail:**
-            1. Check file size (max 50MB)
+            1. Check file size (max 100MB)
             2. Ensure CSV format with headers
             3. Verify required columns exist
             4. Try refreshing the page
