@@ -12,7 +12,7 @@
     "bddchydbal_seq": 1909,
     "bddchydsan_seq": 1807,
     "akdchydsan_seq": 1146,
-    "bddchydnch_seq": 2448,
+    "bddchydnch_seq": 2449,
     "bddchydbvg_seq": 485,
     "bddchydsgr_seq": 442,
     "akdchydsgr_seq": 280,
@@ -25,7 +25,7 @@
     "bddcpunpsl_seq": 2593,
     "bddcchepor_seq": 11
   },
-  "last_updated": "2026-10-03T16:10:03.625805",
+  "last_updated": "2026-10-03T16:12:44.527547",
   "version": "1.0",
   "fy_reset_note": "All sequences reset to 0 for FY 2026-27 on 2026-04-01. First DC of new FY will be 000001.",
   "bddcpuntlw_seq_history": [
@@ -534,10 +534,6 @@
   ],
   "bddchydnch_seq_history": [
     {
-      "value": 2439,
-      "timestamp": "2026-10-02T16:58:42.952973"
-    },
-    {
       "value": 2440,
       "timestamp": "2026-10-02T16:58:45.231666"
     },
@@ -572,6 +568,10 @@
     {
       "value": 2448,
       "timestamp": "2026-10-03T16:10:00.114183"
+    },
+    {
+      "value": 2449,
+      "timestamp": "2026-10-03T16:12:44.527562"
     }
   ],
   "akdchydnch_seq_history": [
